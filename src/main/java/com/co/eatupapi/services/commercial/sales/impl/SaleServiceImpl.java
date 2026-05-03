@@ -3,10 +3,12 @@ package com.co.eatupapi.services.commercial.sales.impl;
 import com.co.eatupapi.domain.commercial.sales.SaleDetailDomain;
 import com.co.eatupapi.domain.commercial.sales.SaleDomain;
 import com.co.eatupapi.domain.commercial.sales.SaleStatus;
+import com.co.eatupapi.dto.commercial.sales.SaleAsyncResponseDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleDetailDTO;
 import com.co.eatupapi.dto.commercial.sales.SalePatchDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleRequestDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleResponseDTO;
+import com.co.eatupapi.messaging.commercial.sales.SaleEventPublisher;
 import com.co.eatupapi.repositories.commercial.sales.SaleRepository;
 import com.co.eatupapi.services.commercial.sales.RecipePreparationTraceService;
 import com.co.eatupapi.services.commercial.sales.SaleService;
@@ -17,6 +19,7 @@ import com.co.eatupapi.utils.commercial.sales.exceptions.SaleValidationException
 import com.co.eatupapi.utils.commercial.sales.mapper.SaleMapper;
 import com.co.eatupapi.utils.commercial.sales.validation.ValidationUtils;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -31,37 +34,28 @@ public class SaleServiceImpl implements SaleService {
     private final SaleMapper saleMapper;
     private final SaleStockValidatorService saleStockValidatorService;
     private final RecipePreparationTraceService traceService;
+    private final SaleEventPublisher saleEventPublisher;
 
     public SaleServiceImpl(SaleRepository saleRepository,
                            SaleMapper saleMapper,
                            SaleStockValidatorService saleStockValidatorService,
-                           RecipePreparationTraceService traceService) {
+                           RecipePreparationTraceService traceService,
+                           SaleEventPublisher saleEventPublisher) {
         this.saleRepository = saleRepository;
         this.saleMapper = saleMapper;
         this.saleStockValidatorService = saleStockValidatorService;
         this.traceService = traceService;
+        this.saleEventPublisher = saleEventPublisher;
     }
 
     @Override
-    @Transactional
-    public SaleResponseDTO createSale(SaleRequestDTO request) {
+    public SaleAsyncResponseDTO createSale(SaleRequestDTO request) {
         validateRequiredSalePayload(request);
         validateSaleLineItems(request.getDetails());
-        saleStockValidatorService.validateStockForSaleDetails(request.getDetails());
 
-        SaleDomain sale = new SaleDomain();
-        sale.setSellerId(request.getSellerId().trim());
-        sale.setLocationId(request.getLocationId());
-        sale.setTableId(request.getTableId().trim());
-        sale.setStatus(SaleStatus.CREATED);
+        saleEventPublisher.publishCreateRequested(request);
 
-        BigDecimal totalAmount = processSaleDetails(sale, request.getDetails());
-        sale.setTotalAmount(totalAmount);
-
-        SaleDomain savedSale = saleRepository.save(sale);
-        traceService.createInitialTraces(savedSale);
-
-        return saleMapper.toDto(savedSale);
+        return new SaleAsyncResponseDTO("La venta fue recibida y será procesada.", LocalDateTime.now());
     }
 
     @Override

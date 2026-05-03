@@ -22,6 +22,15 @@ public class CommercialRabbitMQConfig {
     @Value("${rabbitmq.routing-key.purchase}")
     private String routingKey;
 
+    @Value("${rabbitmq.exchange.sales-create-request}")
+    private String salesCreateRequestExchangeName;
+
+    @Value("${rabbitmq.queue.sales-create-request}")
+    private String salesCreateRequestQueueName;
+
+    @Value("${rabbitmq.routing-key.sales-create-request}")
+    private String salesCreateRequestRoutingKey;
+
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -59,5 +68,23 @@ public class CommercialRabbitMQConfig {
                 .bind(purchaseQueue)
                 .to(commercialExchange)
                 .with(routingKey);
+    }
+
+    @Bean
+    public DirectExchange salesCreateRequestExchange() {
+        return new DirectExchange(salesCreateRequestExchangeName);
+    }
+
+    @Bean
+    public Queue salesCreateRequestQueue() {
+        return QueueBuilder.durable(salesCreateRequestQueueName).build();
+    }
+
+    @Bean
+    public Binding salesCreateRequestBinding(Queue salesCreateRequestQueue, DirectExchange salesCreateRequestExchange) {
+        return BindingBuilder
+                .bind(salesCreateRequestQueue)
+                .to(salesCreateRequestExchange)
+                .with(salesCreateRequestRoutingKey);
     }
 }

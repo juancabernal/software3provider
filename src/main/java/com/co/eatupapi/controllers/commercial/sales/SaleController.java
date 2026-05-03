@@ -1,5 +1,6 @@
 package com.co.eatupapi.controllers.commercial.sales;
 
+import com.co.eatupapi.dto.commercial.sales.SaleAsyncResponseDTO;
 import com.co.eatupapi.dto.commercial.sales.SalePatchDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleRequestDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleResponseDTO;
@@ -32,8 +33,8 @@ public class SaleController {
 
     @Operation(summary = "Crear una venta")
     @PostMapping
-    public ResponseEntity<SaleResponseDTO> create(@Valid @RequestBody SaleRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(saleService.createSale(request));
+    public ResponseEntity<SaleAsyncResponseDTO> create(@Valid @RequestBody SaleRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(saleService.createSale(request));
     }
 
     @Operation(summary = "Obtener una venta por ID")
