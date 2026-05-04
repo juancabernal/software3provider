@@ -51,20 +51,19 @@ public class SaleController {
 
     @Operation(summary = "Actualizar una venta")
     @PutMapping("/{id}")
-    public ResponseEntity<SaleResponseDTO> update(@PathVariable UUID id, @Valid @RequestBody SaleRequestDTO request) {
-        return ResponseEntity.ok(saleService.updateSale(id, request));
+    public ResponseEntity<SaleAsyncResponseDTO> update(@PathVariable UUID id, @Valid @RequestBody SaleRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(saleService.updateSale(id, request));
     }
 
     @Operation(summary = "Actualizar parcialmente una venta")
     @PatchMapping("/{id}")
-    public ResponseEntity<SaleResponseDTO> patch(@PathVariable UUID id, @Valid @RequestBody SalePatchDTO request) {
-        return ResponseEntity.ok(saleService.patchSale(id, request));
+    public ResponseEntity<SaleAsyncResponseDTO> patch(@PathVariable UUID id, @Valid @RequestBody SalePatchDTO request) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(saleService.patchSale(id, request));
     }
 
     @Operation(summary = "Eliminar una venta")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        saleService.deleteSale(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<SaleAsyncResponseDTO> delete(@PathVariable UUID id) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(saleService.deleteSale(id));
     }
 }

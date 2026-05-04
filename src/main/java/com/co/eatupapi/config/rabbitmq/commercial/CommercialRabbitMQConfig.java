@@ -31,6 +31,33 @@ public class CommercialRabbitMQConfig {
     @Value("${rabbitmq.routing-key.sales-create-request}")
     private String salesCreateRequestRoutingKey;
 
+    @Value("${rabbitmq.exchange.sales-update-request}")
+    private String salesUpdateRequestExchangeName;
+
+    @Value("${rabbitmq.queue.sales-update-request}")
+    private String salesUpdateRequestQueueName;
+
+    @Value("${rabbitmq.routing-key.sales-update-request}")
+    private String salesUpdateRequestRoutingKey;
+
+    @Value("${rabbitmq.exchange.sales-patch-request}")
+    private String salesPatchRequestExchangeName;
+
+    @Value("${rabbitmq.queue.sales-patch-request}")
+    private String salesPatchRequestQueueName;
+
+    @Value("${rabbitmq.routing-key.sales-patch-request}")
+    private String salesPatchRequestRoutingKey;
+
+    @Value("${rabbitmq.exchange.sales-delete-request}")
+    private String salesDeleteRequestExchangeName;
+
+    @Value("${rabbitmq.queue.sales-delete-request}")
+    private String salesDeleteRequestQueueName;
+
+    @Value("${rabbitmq.routing-key.sales-delete-request}")
+    private String salesDeleteRequestRoutingKey;
+
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -87,4 +114,51 @@ public class CommercialRabbitMQConfig {
                 .to(salesCreateRequestExchange)
                 .with(salesCreateRequestRoutingKey);
     }
+
+
+    @Bean
+    public DirectExchange salesUpdateRequestExchange() {
+        return new DirectExchange(salesUpdateRequestExchangeName);
+    }
+
+    @Bean
+    public Queue salesUpdateRequestQueue() {
+        return QueueBuilder.durable(salesUpdateRequestQueueName).build();
+    }
+
+    @Bean
+    public Binding salesUpdateRequestBinding(Queue salesUpdateRequestQueue, DirectExchange salesUpdateRequestExchange) {
+        return BindingBuilder.bind(salesUpdateRequestQueue).to(salesUpdateRequestExchange).with(salesUpdateRequestRoutingKey);
+    }
+
+    @Bean
+    public DirectExchange salesPatchRequestExchange() {
+        return new DirectExchange(salesPatchRequestExchangeName);
+    }
+
+    @Bean
+    public Queue salesPatchRequestQueue() {
+        return QueueBuilder.durable(salesPatchRequestQueueName).build();
+    }
+
+    @Bean
+    public Binding salesPatchRequestBinding(Queue salesPatchRequestQueue, DirectExchange salesPatchRequestExchange) {
+        return BindingBuilder.bind(salesPatchRequestQueue).to(salesPatchRequestExchange).with(salesPatchRequestRoutingKey);
+    }
+
+    @Bean
+    public DirectExchange salesDeleteRequestExchange() {
+        return new DirectExchange(salesDeleteRequestExchangeName);
+    }
+
+    @Bean
+    public Queue salesDeleteRequestQueue() {
+        return QueueBuilder.durable(salesDeleteRequestQueueName).build();
+    }
+
+    @Bean
+    public Binding salesDeleteRequestBinding(Queue salesDeleteRequestQueue, DirectExchange salesDeleteRequestExchange) {
+        return BindingBuilder.bind(salesDeleteRequestQueue).to(salesDeleteRequestExchange).with(salesDeleteRequestRoutingKey);
+    }
+
 }
