@@ -1,5 +1,5 @@
 meta {
-  name: set transfer in transit
+  name: reject manual transfer in transit
   type: http
   seq: 5
 }
@@ -50,12 +50,12 @@ body:json {
 script:post-response {
   const data = res.getBody();
 
-  test("Status code is 200", function() {
-    expect(res.getStatus()).to.equal(200);
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
   });
 
-  test("Transfer is EN_TRANSITO", function() {
-    expect(data.estado).to.equal("EN_TRANSITO");
+  test("Manual EN_TRANSITO is rejected", function() {
+    expect(data.message || data.mensaje || JSON.stringify(data)).to.include("EN_TRANSITO");
   });
 }
 

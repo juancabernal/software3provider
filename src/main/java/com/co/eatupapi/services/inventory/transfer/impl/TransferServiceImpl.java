@@ -353,6 +353,9 @@ public class TransferServiceImpl implements TransferService {
     }
 
     private void validateManualStatusUpdate(TransferStatus nextStatus) {
+        if (nextStatus == TransferStatus.EN_TRANSITO) {
+            throw new TransferBusinessException("El estado EN_TRANSITO se actualiza automáticamente");
+        }
         if (nextStatus == TransferStatus.COMPLETADO || nextStatus == TransferStatus.RECLAMADO) {
             throw new TransferBusinessException(
                     "La sede destino debe gestionar esta acción usando los endpoints de confirmación o reclamo"
