@@ -12,7 +12,7 @@ public interface SaleService {
     SaleAsyncResponseDTO createSale(SaleRequestDTO request);
     SaleResponseDTO getSaleById(UUID id);
     List<SaleResponseDTO> getAllSales();
-    SaleResponseDTO updateSale(UUID id, SaleRequestDTO request);
-    SaleResponseDTO patchSale(UUID id, SalePatchDTO request);
-    void deleteSale(UUID id);
+    SaleAsyncResponseDTO updateSale(UUID id, SaleRequestDTO request);
+    SaleAsyncResponseDTO patchSale(UUID id, SalePatchDTO request);
+    SaleAsyncResponseDTO deleteSale(UUID id);
 }

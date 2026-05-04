@@ -20,17 +20,31 @@ public class SaleEventPublisherBroker implements SaleEventPublisher {
 
     @Override
     public void publishCreateRequested(SaleRequestDTO request) {
+        publish(saleQueueConfig.getCreateRequestExchangeName(), saleQueueConfig.getCreateRequestRoutingKeyName(), request);
+    }
+
+    @Override
+    public void publishUpdateRequested(SaleUpdateRequestedMessage message) {
+        publish(saleQueueConfig.getUpdateRequestExchangeName(), saleQueueConfig.getUpdateRequestRoutingKeyName(), message);
+    }
+
+    @Override
+    public void publishPatchRequested(SalePatchRequestedMessage message) {
+        publish(saleQueueConfig.getPatchRequestExchangeName(), saleQueueConfig.getPatchRequestRoutingKeyName(), message);
+    }
+
+    @Override
+    public void publishDeleteRequested(SaleDeleteRequestedMessage message) {
+        publish(saleQueueConfig.getDeleteRequestExchangeName(), saleQueueConfig.getDeleteRequestRoutingKeyName(), message);
+    }
+
+    private void publish(String exchange, String routingKey, Object payload) {
         String idMessage = UUID.randomUUID().toString();
 
-        rabbitTemplate.convertAndSend(
-                saleQueueConfig.getCreateRequestExchangeName(),
-                saleQueueConfig.getCreateRequestRoutingKeyName(),
-                request,
-                message -> {
-                    message.getMessageProperties().setContentType(MessageProperties.CONTENT_TYPE_JSON);
-                    message.getMessageProperties().setHeader("idMensaje", idMessage);
-                    return message;
-                }
-        );
+        rabbitTemplate.convertAndSend(exchange, routingKey, payload, message -> {
+            message.getMessageProperties().setContentType(MessageProperties.CONTENT_TYPE_JSON);
+            message.getMessageProperties().setHeader("idMensaje", idMessage);
+            return message;
+        });
     }
 }
