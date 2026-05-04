@@ -82,6 +82,10 @@ public class TransferServiceImpl implements TransferService {
         if (statusUpdate.estado() == TransferStatus.CANCELADO) {
             validateCancellationAllowed(transfer, sedeOrigen);
         }
+        if (statusUpdate.estado() == TransferStatus.EN_TRANSITO) {
+            validateTransitAllowed(transfer, sedeOrigen);
+        }
+        validateManualStatusUpdate(statusUpdate.estado());
         validateStatusTransition(transfer.getEstado(), statusUpdate.estado());
         if (statusUpdate.estado() == TransferStatus.COMPLETADO) {
             applyInventoryMovement(transfer);
@@ -326,12 +330,33 @@ public class TransferServiceImpl implements TransferService {
 
     private void validateCancellationAllowed(Transfer transfer, String sedeOrigen) {
         validateRequiredLocationId(sedeOrigen, "La sede origen es obligatoria para cancelar", ORIGIN_ROLE);
-        validateLocationExistsAndActive(sedeOrigen, ORIGIN_ROLE);
         if (!sedeOrigen.trim().equals(transfer.getSedeOrigen())) {
             throw new TransferBusinessException("Solo la sede origen puede cancelar el traslado");
         }
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeOrigen(), ORIGIN_ROLE,
+                "Solo la sede origen autenticada puede cancelar el traslado");
         if (transfer.getEstado() != TransferStatus.EN_PROCESO) {
-            throw new TransferBusinessException("Solo se puede cancelar un traslado antes de que entre en tránsito");
+            throw new TransferBusinessException("La sede origen solo puede cancelar traslados en estado EN_PROCESO");
+        }
+    }
+
+    private void validateTransitAllowed(Transfer transfer, String sedeOrigen) {
+        validateRequiredLocationId(sedeOrigen, "La sede origen es obligatoria para enviar el traslado", ORIGIN_ROLE);
+        if (!sedeOrigen.trim().equals(transfer.getSedeOrigen())) {
+            throw new TransferBusinessException("Solo la sede origen puede marcar el traslado en tránsito");
+        }
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeOrigen(), ORIGIN_ROLE,
+                "Solo la sede origen autenticada puede marcar el traslado en tránsito");
+        if (transfer.getEstado() != TransferStatus.EN_PROCESO) {
+            throw new TransferBusinessException("Solo se pueden enviar a tránsito traslados en estado EN_PROCESO");
+        }
+    }
+
+    private void validateManualStatusUpdate(TransferStatus nextStatus) {
+        if (nextStatus == TransferStatus.COMPLETADO || nextStatus == TransferStatus.RECLAMADO) {
+            throw new TransferBusinessException(
+                    "La sede destino debe gestionar esta acción usando los endpoints de confirmación o reclamo"
+            );
         }
     }
 
@@ -342,7 +367,10 @@ public class TransferServiceImpl implements TransferService {
         validateLocationExistsAndActive(locationId, role);
     }
 
-    private void validateAuthenticatedUserCanCreateTransfer(String sedeOrigen) {
+    private void validateAuthenticatedUserBelongsToLocation(String locationId,
+                                                            String role,
+                                                            String mismatchMessage) {
+        validateRequiredLocationId(locationId, "La sede de " + role + " es obligatoria", role);
         String authenticatedEmail = getAuthenticatedUserEmail();
         UserDomain authenticatedUser = userRepository.findByEmailIgnoreCase(authenticatedEmail)
                 .orElseThrow(() -> new TransferBusinessException("No se encontró el usuario autenticado"));
@@ -351,8 +379,8 @@ public class TransferServiceImpl implements TransferService {
             throw new TransferBusinessException("El usuario autenticado no tiene una sede asociada");
         }
 
-        if (!authenticatedUser.getLocationId().toString().equals(sedeOrigen.trim())) {
-            throw new TransferBusinessException("Solo puedes crear traslados desde tu propia sede");
+        if (!authenticatedUser.getLocationId().toString().equals(locationId.trim())) {
+            throw new TransferBusinessException(mismatchMessage);
         }
     }
 
