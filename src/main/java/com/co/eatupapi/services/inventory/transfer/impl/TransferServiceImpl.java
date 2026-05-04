@@ -60,7 +60,8 @@ public class TransferServiceImpl implements TransferService {
     @Transactional
     public TransferResponseDTO create(TransferRequestDTO request) {
         TransferProducts products = validateAndLoadRequest(request);
-        validateAuthenticatedUserCanCreateTransfer(request.sedeOrigen());
+        validateAuthenticatedUserBelongsToLocation(request.sedeOrigen(), ORIGIN_ROLE,
+                "Solo puedes crear traslados desde tu propia sede");
         Transfer transfer = transferMapper.toDomain(request);
         transfer.setEstado(TransferStatus.EN_PROCESO);
         transfer.setStock(products.originProduct().getStock());
@@ -152,6 +153,8 @@ public class TransferServiceImpl implements TransferService {
     @Transactional
     public TransferResponseDTO confirmReceipt(Long id, String sedeDestino) {
         Transfer transfer = getDestinationTransfer(id, sedeDestino);
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeDestino(), DESTINATION_ROLE,
+                "Solo la sede destino autenticada puede confirmar el traslado");
         validateReceivableStatus(transfer);
         applyInventoryMovement(transfer);
         transfer.setEstado(TransferStatus.COMPLETADO);
@@ -162,6 +165,8 @@ public class TransferServiceImpl implements TransferService {
     @Transactional
     public TransferResponseDTO claimReceipt(Long id, String sedeDestino, TransferObservacionUpdateDTO observacionUpdate) {
         Transfer transfer = getDestinationTransfer(id, sedeDestino);
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeDestino(), DESTINATION_ROLE,
+                "Solo la sede destino autenticada puede reclamar el traslado");
         validateReceivableStatus(transfer);
 
         String observations = observacionUpdate == null ? null : observacionUpdate.observaciones();
@@ -353,9 +358,6 @@ public class TransferServiceImpl implements TransferService {
     }
 
     private void validateManualStatusUpdate(TransferStatus nextStatus) {
-        if (nextStatus == TransferStatus.EN_TRANSITO) {
-            throw new TransferBusinessException("El estado EN_TRANSITO se actualiza automáticamente");
-        }
         if (nextStatus == TransferStatus.COMPLETADO || nextStatus == TransferStatus.RECLAMADO) {
             throw new TransferBusinessException(
                     "La sede destino debe gestionar esta acción usando los endpoints de confirmación o reclamo"
