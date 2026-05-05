@@ -4,7 +4,10 @@ import com.co.eatupapi.domain.inventory.product.Product;
 import com.co.eatupapi.dto.inventory.product.ProductDTO;
 import com.co.eatupapi.dto.inventory.product.ProductPatchDTO;
 import com.co.eatupapi.dto.inventory.product.ProductRequestDTO;
-import com.co.eatupapi.messaging.inventory.product.ProductEventPublisher;
+import com.co.eatupapi.messaging.inventory.product.ProductCreatedEventPublisher;
+import com.co.eatupapi.messaging.inventory.product.ProductDeleteEventPublisher;
+import com.co.eatupapi.messaging.inventory.product.ProductPatchEventPublisher;
+import com.co.eatupapi.messaging.inventory.product.ProductUpdateEventPublisher;
 import com.co.eatupapi.repositories.inventory.product.ProductRepository;
 import com.co.eatupapi.utils.inventory.product.exceptions.BusinessException;
 import com.co.eatupapi.utils.inventory.product.exceptions.ResourceNotFoundException;
@@ -26,13 +29,19 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final ProductEventPublisher productEventPublisher;
+    private final ProductCreatedEventPublisher productCreatedEventPublisher;
+    private final ProductUpdateEventPublisher productUpdateEventPublisher;
+    private final ProductPatchEventPublisher productPatchEventPublisher;
+    private final ProductDeleteEventPublisher productDeleteEventPublisher;
 
     public ProductServiceImpl(ProductRepository productRepository,
-                              ProductMapper productMapper, ProductEventPublisher productEventPublisher) {
+                              ProductMapper productMapper, ProductCreatedEventPublisher productCreatedEventPublisher, ProductUpdateEventPublisher productUpdateEventPublisher, ProductPatchEventPublisher productPatchEventPublisher, ProductDeleteEventPublisher productDeleteEventPublisher) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
-        this.productEventPublisher = productEventPublisher;
+        this.productCreatedEventPublisher = productCreatedEventPublisher;
+        this.productUpdateEventPublisher = productUpdateEventPublisher;
+        this.productPatchEventPublisher = productPatchEventPublisher;
+        this.productDeleteEventPublisher = productDeleteEventPublisher;
     }
 
     @Override
@@ -87,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productMapper.toDomain(request);
 
-        productEventPublisher.publishCreateRequested(request);
+        productCreatedEventPublisher.publish(request);
 
         return productMapper.toDto(product);
     }
@@ -95,6 +104,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductDTO update(UUID id, ProductRequestDTO request) {
+
         validateId(id);
         validateRequestNotNull(request);
 
@@ -104,7 +114,9 @@ public class ProductServiceImpl implements ProductService {
         validateDuplicateNameAndLocation(id, normalizedName, request.getLocationId());
         applyFullUpdate(product, request, normalizedName);
 
-        return productMapper.toDto(productRepository.save(product));
+        productUpdateEventPublisher.publish(id, request);
+
+        return productMapper.toDto(product);
     }
 
     @Override
@@ -128,12 +140,15 @@ public class ProductServiceImpl implements ProductService {
 
         applyPatch(product, request, effectiveName);
 
-        return productMapper.toDto(productRepository.save(product));
+        productPatchEventPublisher.publish(id, request);
+
+        return productMapper.toDto(product);
     }
 
     @Override
     @Transactional
     public void delete(UUID id) {
+
         validateId(id);
 
         Product product = findProductOrThrow(id);
@@ -145,7 +160,7 @@ public class ProductServiceImpl implements ProductService {
             );
         }
 
-        productRepository.deleteById(id);
+        productDeleteEventPublisher.publish(id);
     }
 
     private Product findProductOrThrow(UUID id) {

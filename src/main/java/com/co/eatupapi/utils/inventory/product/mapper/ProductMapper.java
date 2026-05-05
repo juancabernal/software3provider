@@ -2,6 +2,7 @@ package com.co.eatupapi.utils.inventory.product.mapper;
 
 import com.co.eatupapi.domain.inventory.product.Product;
 import com.co.eatupapi.dto.inventory.product.ProductDTO;
+import com.co.eatupapi.dto.inventory.product.ProductPatchDTO;
 import com.co.eatupapi.dto.inventory.product.ProductRequestDTO;
 import org.springframework.stereotype.Component;
 
@@ -31,5 +32,36 @@ public class ProductMapper {
         product.setStock(request.getStock());
         product.setStartDate(request.getStartDate());
         return product;
+    }
+
+    public void mergePatch(Product product, ProductPatchDTO request) {
+
+        if (request.getName() != null) {
+            product.setName(request.getName().trim().replaceAll("\\s+", " "));
+        }
+
+        if (request.getCategoryId() != null) {
+            product.setCategoryId(request.getCategoryId());
+        }
+
+        if (request.getLocationId() != null) {
+            product.setLocationId(request.getLocationId());
+        }
+
+        if (request.getUnitOfMeasure() != null) {
+            product.setUnitOfMeasure(request.getUnitOfMeasure());
+        }
+
+        if (request.getSalePrice() != null) {
+            product.setSalePrice(request.getSalePrice());
+        }
+
+        if (request.getStock() != null) {
+            product.setStock(request.getStock());
+        }
+
+        if (request.getStartDate() != null) {
+            product.setStartDate(request.getStartDate());
+        }
     }
 }
