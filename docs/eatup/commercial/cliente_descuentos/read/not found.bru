@@ -1,0 +1,26 @@
+meta {
+  name: not found
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts/00000000-0000-0000-0000-000000000000
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

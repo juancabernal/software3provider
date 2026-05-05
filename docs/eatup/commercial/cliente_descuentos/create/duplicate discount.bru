@@ -1,0 +1,41 @@
+meta {
+  name: duplicate discount
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "locationId": "550e8400-e29b-41d4-a716-446655440000",
+    "customerId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "discountId": "{{discountId}}",
+    "assignedAt": "2026-05-05",
+    "startDate": "2026-05-05",
+    "endDate": "2026-06-05"
+  }
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+  });
+
+  test("Message mentions duplicate", function() {
+    expect(res.getBody().message).to.include("Ya existe");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

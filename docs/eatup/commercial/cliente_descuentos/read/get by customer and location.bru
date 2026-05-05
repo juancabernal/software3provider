@@ -1,0 +1,38 @@
+meta {
+  name: get by customer and location
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/customers/{{customerId}}/discounts?locationId={{locationId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("All results belong to the customer", function() {
+    res.getBody().forEach(function(item) {
+      expect(item.customerId).to.equal(bru.getVar("customerId"));
+    });
+  });
+
+  test("All results belong to the location", function() {
+    res.getBody().forEach(function(item) {
+      expect(item.locationId).to.equal(bru.getVar("locationId"));
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,32 @@
+meta {
+  name: set inactive
+  type: http
+  seq: 1
+}
+
+patch {
+  url: http://localhost:8080/comercial/api/v1/discounts/{{discountId}}/status
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "status": false
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Status is false", function() {
+    expect(res.getBody().status).to.equal(false);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

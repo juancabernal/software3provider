@@ -1,0 +1,35 @@
+meta {
+  name: not found
+  type: http
+  seq: 2
+}
+
+put {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts/00000000-0000-0000-0000-000000000000
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "locationId": "550e8400-e29b-41d4-a716-446655440000",
+    "customerId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "discountId": "{{discountId}}",
+    "assignedAt": "2026-05-05"
+  }
+}
+
+tests {
+  test("Status code is 404", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+    expect(res.getBody().message).to.include("no encontrado");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,31 @@
+meta {
+  name: get by id
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts/{{customerDiscountId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has required fields", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("id");
+    expect(body).to.have.property("customerId");
+    expect(body).to.have.property("locationId");
+    expect(body).to.have.property("discountId");
+    expect(body).to.have.property("assignedAt");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

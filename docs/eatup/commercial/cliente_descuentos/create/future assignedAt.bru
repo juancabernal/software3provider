@@ -1,0 +1,39 @@
+meta {
+  name: future assignedAt
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "locationId": "550e8400-e29b-41d4-a716-446655440000",
+    "customerId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "discountId": "{{discountId}}",
+    "assignedAt": "2030-01-01"
+  }
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+  });
+
+  test("Message mentions assignedAt", function() {
+    expect(res.getBody().message).to.contain("assignedAt");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,32 @@
+meta {
+  name: get active
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/discounts/active
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("All discounts are active", function() {
+    res.getBody().forEach(d => {
+      expect(d.status).to.equal(true);
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

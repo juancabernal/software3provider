@@ -10,6 +10,8 @@ public class CustomerDiscountDTO {
     private UUID customerId;
     private UUID discountId;
     private LocalDate assignedAt;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     public CustomerDiscountDTO() {
     }
@@ -60,5 +62,21 @@ public class CustomerDiscountDTO {
 
     public void setAssignedAt(LocalDate assignedAt) {
         this.assignedAt = assignedAt;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 }

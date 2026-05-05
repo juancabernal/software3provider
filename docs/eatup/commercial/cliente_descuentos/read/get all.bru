@@ -1,0 +1,40 @@
+meta {
+  name: get all
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("Array is not empty", function() {
+    expect(res.getBody().length).to.be.greaterThan(0);
+  });
+
+  test("Each record has required fields", function() {
+    res.getBody().forEach(cd => {
+      expect(cd).to.have.property("id");
+      expect(cd).to.have.property("customerId");
+      expect(cd).to.have.property("locationId");
+      expect(cd).to.have.property("discountId");
+      expect(cd).to.have.property("assignedAt");
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

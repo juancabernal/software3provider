@@ -1,0 +1,44 @@
+meta {
+  name: correct request
+  type: http
+  seq: 1
+}
+
+put {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts/{{customerDiscountId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "locationId": "550e8400-e29b-41d4-a716-446655440000",
+    "customerId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "discountId": "{{discountId}}",
+    "assignedAt": "2026-05-05",
+    "startDate": "2026-05-05",
+    "endDate": "2026-07-05"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("endDate was updated", function() {
+    expect(res.getBody().endDate).to.equal("2026-07-05");
+  });
+
+  test("Response has required fields", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("id");
+    expect(body).to.have.property("customerId");
+    expect(body).to.have.property("discountId");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

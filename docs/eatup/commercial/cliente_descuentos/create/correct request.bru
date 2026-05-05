@@ -1,0 +1,50 @@
+meta {
+  name: correct request
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "locationId": "550e8400-e29b-41d4-a716-446655440000",
+    "customerId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "discountId": "{{discountId}}",
+    "assignedAt": "2026-05-05",
+    "startDate": "2026-05-05",
+    "endDate": "2026-06-05"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data && data.id) {
+    bru.setVar("customerDiscountId", data.id);
+    bru.setVar("customerId", data.customerId);
+    bru.setVar("locationId", data.locationId);
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("Response has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+
+  test("discountId matches", function() {
+    expect(res.getBody().discountId).to.equal(bru.getVar("discountId"));
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

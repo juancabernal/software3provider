@@ -1,0 +1,46 @@
+meta {
+  name: correct request
+  type: http
+  seq: 1
+}
+
+put {
+  url: http://localhost:8080/comercial/api/v1/discounts/{{discountId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "categoryId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "percentage": 20,
+    "description": "Descuento VIP actualizado",
+    "status": true
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Percentage was updated to 20", function() {
+    expect(res.getBody().percentage).to.equal(20);
+  });
+
+  test("Description was updated", function() {
+    expect(res.getBody().description).to.equal("Descuento VIP actualizado");
+  });
+
+  test("Response has required fields", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("id");
+    expect(body).to.have.property("categoryId");
+    expect(body).to.have.property("status");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

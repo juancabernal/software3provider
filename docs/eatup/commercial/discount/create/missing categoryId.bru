@@ -1,0 +1,38 @@
+meta {
+  name: missing categoryId
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/comercial/api/v1/discounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "percentage": 10,
+    "description": "Descuento sin categoria",
+    "status": true
+  }
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+  });
+
+  test("Message mentions categoryId", function() {
+    expect(res.getBody().message).to.contain("categoryId");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

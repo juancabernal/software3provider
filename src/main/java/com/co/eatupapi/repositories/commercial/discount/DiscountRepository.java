@@ -9,4 +9,8 @@ import java.util.UUID;
 public interface DiscountRepository extends JpaRepository<DiscountDomain, UUID> {
 
     List<DiscountDomain> findByStatus(Boolean status);
+
+    boolean existsByCategoryIdAndDescription(UUID categoryId, String description);
+
+    boolean existsByCategoryIdAndDescriptionAndIdNot(UUID categoryId, String description, UUID id);
 }

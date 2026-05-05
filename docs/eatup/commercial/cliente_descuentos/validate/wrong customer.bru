@@ -1,0 +1,30 @@
+meta {
+  name: wrong customer
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/customer-discounts/{{customerDiscountId}}/validate?customerId=00000000-0000-0000-0000-000000000000&locationId={{locationId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+  });
+
+  test("Message mentions client", function() {
+    expect(res.getBody().message).to.contain("cliente");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,26 @@
+meta {
+  name: not found
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/discounts/00000000-0000-0000-0000-000000000000
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 404", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+    expect(res.getBody().message).to.include("no encontrado");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

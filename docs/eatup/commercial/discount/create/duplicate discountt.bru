@@ -1,0 +1,35 @@
+meta {
+  name: duplicate discountt
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8080/comercial/api/v1/discounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "categoryId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "percentage": 15,
+    "description": "Descuento VIP",
+    "status": true
+  }
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Message mentions duplicate", function() {
+    expect(res.getBody().message).to.include("Ya existe");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

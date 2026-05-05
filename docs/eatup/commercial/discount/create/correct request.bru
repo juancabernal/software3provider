@@ -1,0 +1,48 @@
+meta {
+  name: correct request
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/comercial/api/v1/discounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "categoryId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "percentage": 15,
+    "description": "Descuento VIP",
+    "status": true
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data && data.id) {
+    bru.setVar("discountId", data.id);
+  }
+}
+
+tests {
+  
+    test("Status code is 201", function() {
+      expect(res.getStatus()).to.equal(201);
+    });
+  
+    test("Response has id", function() {
+      expect(res.getBody()).to.have.property("id");
+    });
+  
+    test("Percentage is correct", function() {
+      expect(res.getBody().percentage).to.equal(15);
+    });
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

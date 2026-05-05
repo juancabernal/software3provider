@@ -1,0 +1,36 @@
+meta {
+  name: get by id
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/discounts/{{discountId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has required fields", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("id");
+    expect(body).to.have.property("categoryId");
+    expect(body).to.have.property("percentage");
+    expect(body).to.have.property("description");
+    expect(body).to.have.property("status");
+  });
+  
+  test("Percentage is between 1 and 100", function() {
+    expect(res.getBody().percentage).to.be.at.least(1);
+    expect(res.getBody().percentage).to.be.at.most(100);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

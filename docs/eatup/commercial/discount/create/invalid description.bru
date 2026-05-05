@@ -1,0 +1,39 @@
+meta {
+  name: invalid description
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/comercial/api/v1/discounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "categoryId": "b9734b27-272a-418a-aba9-3ceb4864e39b",
+    "percentage": 10,
+    "description": "Hi",
+    "status": true
+  }
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Response has error message", function() {
+    expect(res.getBody()).to.have.property("message");
+  });
+
+  test("Message mentions description", function() {
+    expect(res.getBody().message).to.contain("description");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

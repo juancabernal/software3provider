@@ -8,23 +8,29 @@ import org.springframework.stereotype.Component;
 public class CustomerDiscountMapper {
 
     public CustomerDiscountDTO toDto(CustomerDiscountDomain domain) {
-        return new CustomerDiscountDTO(
+        CustomerDiscountDTO dto = new CustomerDiscountDTO(
                 domain.getId(),
                 domain.getLocationId(),
                 domain.getCustomerId(),
                 domain.getDiscountId(),
                 domain.getAssignedAt()
         );
+        dto.setStartDate(domain.getStartDate());
+        dto.setEndDate(domain.getEndDate());
+        return dto;
     }
 
     public CustomerDiscountDomain toDomain(CustomerDiscountDTO dto) {
-        return new CustomerDiscountDomain(
+        CustomerDiscountDomain domain = new CustomerDiscountDomain(
                 dto.getId(),
                 dto.getLocationId(),
                 dto.getCustomerId(),
                 dto.getDiscountId(),
                 dto.getAssignedAt()
         );
+        domain.setStartDate(dto.getStartDate());
+        domain.setEndDate(dto.getEndDate());
+        return domain;
     }
 
     public void updateDomain(CustomerDiscountDomain domain, CustomerDiscountDTO dto) {
@@ -32,5 +38,7 @@ public class CustomerDiscountMapper {
         domain.setCustomerId(dto.getCustomerId());
         domain.setDiscountId(dto.getDiscountId());
         domain.setAssignedAt(dto.getAssignedAt());
+        domain.setStartDate(dto.getStartDate());
+        domain.setEndDate(dto.getEndDate());
     }
 }

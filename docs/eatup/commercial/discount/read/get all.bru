@@ -1,0 +1,40 @@
+meta {
+  name: get all
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/discounts
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("Array is not empty", function() {
+    expect(res.getBody().length).to.be.greaterThan(0);
+  });
+
+  test("Each discount has required fields", function() {
+    res.getBody().forEach(d => {
+      expect(d).to.have.property("id");
+      expect(d).to.have.property("categoryId");
+      expect(d).to.have.property("percentage");
+      expect(d).to.have.property("description");
+      expect(d).to.have.property("status");
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

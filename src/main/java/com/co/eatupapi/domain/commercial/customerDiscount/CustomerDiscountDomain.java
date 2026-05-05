@@ -38,6 +38,12 @@ public class CustomerDiscountDomain {
     @Column
     private LocalDateTime modifiedAt;
 
+    @Column
+    private LocalDate startDate;   // inicio de vigencia
+
+    @Column
+    private LocalDate endDate;     // fin de vigencia (null = sin vencimiento)
+
     public CustomerDiscountDomain() {
     }
 
@@ -113,6 +119,22 @@ public class CustomerDiscountDomain {
 
     public void setModifiedAt(LocalDateTime modifiedAt) {
         this.modifiedAt = modifiedAt;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 }
 

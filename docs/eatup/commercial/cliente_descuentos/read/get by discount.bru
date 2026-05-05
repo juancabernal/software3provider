@@ -1,0 +1,32 @@
+meta {
+  name: get by discount
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/comercial/api/v1/discounts/{{discountId}}/customers
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("All records reference the requested discount", function() {
+    res.getBody().forEach(cd => {
+      expect(cd.discountId).to.equal(bru.getVar("discountId"));
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

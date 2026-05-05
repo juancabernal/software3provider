@@ -41,16 +41,15 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     public DiscountDTO createDiscount(DiscountDTO discount) {
-        DiscountDTO validated = validate(discount);
+        DiscountDTO validated = validate(discount, null);
         DiscountDomain domain = discountMapper.toDomain(validated);
-        domain.setCreatedAt(LocalDateTime.now());
         DiscountDomain saved = discountRepository.save(domain);
         return discountMapper.toDto(saved);
     }
 
     @Override
     public Optional<DiscountDTO> updateDiscount(UUID id, DiscountDTO discount) {
-        DiscountDTO validated = validate(discount);
+        DiscountDTO validated = validate(discount, id);
         return discountRepository.findById(id)
                 .map(existing -> {
                     discountMapper.updateDomain(existing, validated);
@@ -83,21 +82,35 @@ public class DiscountServiceImpl implements DiscountService {
         return true;
     }
 
-    private DiscountDTO validate(DiscountDTO discount) {
-        if (discount.getPercentage() == null || discount.getPercentage() < 0 || discount.getPercentage() > 100) {
-            throw new IllegalArgumentException("percentage debe estar entre 0 y 100");
-        }
+    private DiscountDTO validate(DiscountDTO discount,  UUID excludeId) {
+
+        if (discount.getPercentage() == null)
+            throw new IllegalArgumentException("percentage es obligatorio");
+
+        if (discount.getPercentage() < 1 || discount.getPercentage() > 100)
+            throw new IllegalArgumentException("percentage debe estar entre 1 y 100");
+
         if (discount.getCategoryId() == null) {
             throw new IllegalArgumentException("categoryId es obligatorio");
         }
         if (discount.getDescription() == null || discount.getDescription().isBlank()) {
             throw new IllegalArgumentException("description es obligatoria");
         }
-        if (discount.getDescription().length() < 5 || discount.getDescription().length() > 30) {
-            throw new IllegalArgumentException("description debe tener entre 5 y 30 caracteres");
+        if (discount.getDescription().length() < 5 || discount.getDescription().length() > 100) {
+            throw new IllegalArgumentException("description debe tener entre 5 y 100 caracteres");
         }
         if (discount.getStatus() == null) {
             discount.setStatus(Boolean.TRUE);
+        }
+        boolean duplicado = excludeId != null
+                ? discountRepository.existsByCategoryIdAndDescriptionAndIdNot(
+                discount.getCategoryId(), discount.getDescription(), excludeId)
+                : discountRepository.existsByCategoryIdAndDescription(
+                discount.getCategoryId(), discount.getDescription());
+
+        if (duplicado) {
+            throw new IllegalArgumentException(
+                    "Ya existe un descuento con esa descripcion en esta categoria");
         }
         return discount;
     }
