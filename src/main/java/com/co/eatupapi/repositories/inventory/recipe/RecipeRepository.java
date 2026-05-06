@@ -8,8 +8,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RecipeRepository extends JpaRepository<RecipeDomain, UUID> {
+
     boolean existsByName(String name);
+
     Optional<RecipeDomain> findByName(String name);
+
     Optional<RecipeDomain> findByNameAndActiveTrue(String name);
-    List<RecipeDomain> findBySubRecipeIdsContains(UUID subRecipeId);
+
+    List<RecipeDomain> findBySubRecipes_SubRecipeId(UUID subRecipeId);
 }

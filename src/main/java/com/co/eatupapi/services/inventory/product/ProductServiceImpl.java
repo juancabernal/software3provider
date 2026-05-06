@@ -130,6 +130,7 @@ public class ProductServiceImpl implements ProductService {
         String effectiveName = request.getName() != null
                 ? normalizeName(request.getName())
                 : product.getName();
+
         UUID effectiveLocationId = request.getLocationId() != null
                 ? request.getLocationId()
                 : product.getLocationId();
@@ -138,9 +139,11 @@ public class ProductServiceImpl implements ProductService {
             validateDuplicateNameAndLocation(id, effectiveName, effectiveLocationId);
         }
 
-        applyPatch(product, request, effectiveName);
+        productMapper.mergePatch(product, request);
 
-        productPatchEventPublisher.publish(id, request);
+        ProductPatchDTO fullPayload = buildFullPatch(product);
+
+        productPatchEventPublisher.publish(id, fullPayload);
 
         return productMapper.toDto(product);
     }
@@ -226,6 +229,20 @@ public class ProductServiceImpl implements ProductService {
         if (request == null) {
             throw new ValidationException("La solicitud no puede estar vacia");
         }
+    }
+
+    private ProductPatchDTO buildFullPatch(Product product) {
+        ProductPatchDTO dto = new ProductPatchDTO();
+
+        dto.setName(product.getName());
+        dto.setCategoryId(product.getCategoryId());
+        dto.setLocationId(product.getLocationId());
+        dto.setUnitOfMeasure(product.getUnitOfMeasure());
+        dto.setSalePrice(product.getSalePrice());
+        dto.setStock(product.getStock());
+        dto.setStartDate(product.getStartDate());
+
+        return dto;
     }
 
     private void validatePatchRequest(ProductPatchDTO request) {

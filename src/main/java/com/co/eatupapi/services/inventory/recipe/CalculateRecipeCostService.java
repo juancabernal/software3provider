@@ -1,5 +1,6 @@
 package com.co.eatupapi.services.inventory.recipe;
 
+import com.co.eatupapi.dto.inventory.recipe.RecipeRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,9 +19,7 @@ public class CalculateRecipeCostService {
         this.subRecipesCostService = subRecipesCostService;
     }
 
-    public BigDecimal run(
-            com.co.eatupapi.dto.inventory.recipe.RecipeRequest request
-    ) {
+    public BigDecimal run(RecipeRequest request) {
 
         return productsCostService.run(request)
                 .add(

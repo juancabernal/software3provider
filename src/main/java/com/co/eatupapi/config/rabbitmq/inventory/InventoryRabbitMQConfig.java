@@ -1,10 +1,6 @@
 package com.co.eatupapi.config.rabbitmq.inventory;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -26,6 +22,9 @@ public class InventoryRabbitMQConfig {
     @Value("${rabbitmq.queue.product.update}")
     private String productUpdateQueue;
 
+    @Value("${rabbitmq.queue.product.patch}")
+    private String productPatchQueue;
+
     @Value("${rabbitmq.queue.product.stock}")
     private String productStockQueue;
 
@@ -37,6 +36,9 @@ public class InventoryRabbitMQConfig {
 
     @Value("${rabbitmq.routing-key.product.update}")
     private String updateRoutingKey;
+
+    @Value("${rabbitmq.routing-key.product.patch}")
+    private String patchRoutingKey;
 
     @Value("${rabbitmq.routing-key.product.stock}")
     private String stockRoutingKey;
@@ -82,6 +84,11 @@ public class InventoryRabbitMQConfig {
     }
 
     @Bean
+    public Queue productPatchQueue() {
+        return QueueBuilder.durable(productPatchQueue).build();
+    }
+
+    @Bean
     public Queue productStockQueue() {
         return QueueBuilder.durable(productStockQueue).build();
     }
@@ -103,6 +110,13 @@ public class InventoryRabbitMQConfig {
         return BindingBuilder.bind(productUpdateQueue)
                 .to(productExchange)
                 .with(updateRoutingKey);
+    }
+
+    @Bean
+    public Binding patchBinding(Queue productPatchQueue, DirectExchange productExchange) {
+        return BindingBuilder.bind(productPatchQueue)
+                .to(productExchange)
+                .with(patchRoutingKey);
     }
 
     @Bean

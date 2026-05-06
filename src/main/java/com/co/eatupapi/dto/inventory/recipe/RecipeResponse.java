@@ -15,28 +15,20 @@ import java.util.UUID;
 public class RecipeResponse {
 
     private UUID id;
-
     private String name;
-
     private UUID categoryId;
-
     private UUID locationId;
 
-    private List<UUID> productIds;
-
-    private List<UUID> subRecipeIds;
+    private List<RecipeProductRequest> products;
+    private List<RecipeSubRecipeRequest> subRecipes;
 
     private BigDecimal baseCost;
-
     private Integer profitMargin;
-
     private BigDecimal sellingPrice;
 
     private Boolean visibleInMenu;
-
     private Boolean active;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 }

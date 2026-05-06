@@ -31,7 +31,7 @@ public class RecalculateDependentRecipesCostService {
     private void process(UUID recipeId) {
 
         List<RecipeDomain> parentRecipes =
-                repo.findBySubRecipeIdsContains(recipeId);
+                repo.findBySubRecipes_SubRecipeId(recipeId);
 
         for (RecipeDomain recipe : parentRecipes) {
             recalculateRecipe(recipe);
@@ -56,15 +56,18 @@ public class RecalculateDependentRecipesCostService {
 
     private BigDecimal calculateSubRecipesCost(RecipeDomain recipe) {
 
-        if (recipe.getSubRecipeIds() == null || recipe.getSubRecipeIds().isEmpty()) {
+        if (recipe.getSubRecipes() == null || recipe.getSubRecipes().isEmpty()) {
             return BigDecimal.ZERO;
         }
 
-        return recipe.getSubRecipeIds()
+        return recipe.getSubRecipes()
                 .stream()
-                .map(id -> repo.findById(id)
-                        .orElseThrow()
-                        .getBaseCost())
+                .map(sub ->
+                        repo.findById(sub.getSubRecipeId())
+                                .orElseThrow()
+                                .getBaseCost()
+                                .multiply(BigDecimal.valueOf(sub.getQuantity()))
+                )
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
