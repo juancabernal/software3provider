@@ -5,6 +5,7 @@ package com.co.eatupapi.services.commercial.discount;
 import com.co.eatupapi.domain.commercial.discount.DiscountDomain;
 import com.co.eatupapi.dto.commercial.discount.DiscountDTO;
 
+import com.co.eatupapi.messaging.commercial.discount.DiscountEventPublisher;
 import com.co.eatupapi.repositories.commercial.discount.DiscountRepository;
 import com.co.eatupapi.utils.commercial.discount.mapper.DiscountMapper;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,14 @@ public class DiscountServiceImpl implements DiscountService {
 
     private final DiscountRepository discountRepository;
     private final DiscountMapper discountMapper;
+    private final DiscountEventPublisher discountEventPublisher;
 
-    public DiscountServiceImpl(DiscountRepository discountRepository, DiscountMapper discountMapper) {
+    public DiscountServiceImpl(DiscountRepository discountRepository,
+                               DiscountMapper discountMapper,
+                               DiscountEventPublisher discountEventPublisher) {
         this.discountRepository = discountRepository;
         this.discountMapper = discountMapper;
+        this.discountEventPublisher = discountEventPublisher;
     }
 
     @Override
@@ -44,7 +49,9 @@ public class DiscountServiceImpl implements DiscountService {
         DiscountDTO validated = validate(discount, null);
         DiscountDomain domain = discountMapper.toDomain(validated);
         DiscountDomain saved = discountRepository.save(domain);
-        return discountMapper.toDto(saved);
+        DiscountDTO result = discountMapper.toDto(saved);
+        discountEventPublisher.publishDiscountCreated(result);
+        return result;
     }
 
     @Override
@@ -56,7 +63,11 @@ public class DiscountServiceImpl implements DiscountService {
                     existing.setModifiedAt(LocalDateTime.now());
                     return discountRepository.save(existing);
                 })
-                .map(discountMapper::toDto);
+                .map(saved -> {
+                    DiscountDTO result = discountMapper.toDto(saved);
+                    discountEventPublisher.publishDiscountUpdated(result);
+                    return result;
+                });
     }
 
     @Override
@@ -79,6 +90,7 @@ public class DiscountServiceImpl implements DiscountService {
             return false;
         }
         discountRepository.deleteById(id);
+        discountEventPublisher.publishDiscountDeleted(id);
         return true;
     }
 
