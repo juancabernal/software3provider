@@ -26,7 +26,7 @@ public class ProductPatchEventPublisher {
 
         rabbitTemplate.convertAndSend(
                 config.getProductExchangeName(),
-                config.getUpdateRoutingKey(),
+                config.getPatchRoutingKey(),
                 Map.of(
                         "id", id,
                         "data", request

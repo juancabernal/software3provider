@@ -111,17 +111,19 @@ public class SaleStockValidatorServiceImpl implements SaleStockValidatorService 
     }
 
     private void addRecipeProducts(RecipeResponse recipe, Set<UUID> productIdsToValidate) {
-        if (recipe.getProductIds() == null || recipe.getProductIds().isEmpty()) {
+
+        if (recipe.getProducts() == null || recipe.getProducts().isEmpty()) {
             return;
         }
 
-        for (UUID productId : recipe.getProductIds()) {
-            if (productId == null) {
+        for (var product : recipe.getProducts()) {
+
+            if (product == null || product.getProductId() == null) {
                 throw new SaleBusinessException("La receta '" + recipe.getName()
-                        + "' tiene un producto nulo asociado.");
+                        + "' tiene un producto inválido.");
             }
 
-            productIdsToValidate.add(productId);
+            productIdsToValidate.add(product.getProductId());
         }
     }
 
@@ -129,23 +131,25 @@ public class SaleStockValidatorServiceImpl implements SaleStockValidatorService 
                                    Set<UUID> currentPath,
                                    Set<UUID> resolvedRecipes,
                                    Set<UUID> productIdsToValidate) {
-        if (recipe.getSubRecipeIds() == null || recipe.getSubRecipeIds().isEmpty()) {
+
+        if (recipe.getSubRecipes() == null || recipe.getSubRecipes().isEmpty()) {
             return;
         }
 
-        for (UUID subRecipeId : recipe.getSubRecipeIds()) {
-            if (subRecipeId == null) {
+        recipe.getSubRecipes().forEach(sub -> {
+
+            if (sub == null || sub.getSubRecipeId() == null) {
                 throw new SaleBusinessException("La receta '" + recipe.getName()
-                        + "' tiene una subreceta nula asociada.");
+                        + "' tiene una subreceta inválida.");
             }
 
             collectProductsFromRecipe(
-                    subRecipeId,
+                    sub.getSubRecipeId(),
                     currentPath,
                     resolvedRecipes,
                     productIdsToValidate
             );
-        }
+        });
     }
 
     private void validateProductsHaveStock(Set<UUID> productIdsToValidate) {

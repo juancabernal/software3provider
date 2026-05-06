@@ -8,17 +8,14 @@ import java.math.BigDecimal;
 @Service
 public class CalculateProductsCostService {
 
-    public BigDecimal run(
-            RecipeRequest request
-    ) {
+    public BigDecimal run(RecipeRequest request) {
 
         return request.getProducts()
                 .stream()
-                .map(
-                        p -> p.getQuantity()
-                                .multiply(
-                                        p.getPrice()
-                                )
+                .map(p ->
+                        p.getPrice().multiply(
+                                BigDecimal.valueOf(p.getQuantity())
+                        )
                 )
                 .reduce(
                         BigDecimal.ZERO,

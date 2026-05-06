@@ -1,5 +1,6 @@
 package com.co.eatupapi.messaging.inventory.product;
 
+import com.co.eatupapi.dto.inventory.product.ProductDeleteMessageDTO;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
@@ -22,10 +23,12 @@ public class ProductDeleteEventPublisher {
 
         String messageId = UUID.randomUUID().toString();
 
+        ProductDeleteMessageDTO payload = new ProductDeleteMessageDTO(productId);
+
         rabbitTemplate.convertAndSend(
                 productQueueConfig.getProductExchangeName(),
                 productQueueConfig.getDeleteRoutingKey(),
-                productId,
+                payload,
                 message -> {
 
                     message.getMessageProperties()

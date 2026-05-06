@@ -1,6 +1,7 @@
 package com.co.eatupapi.domain.inventory.recipe;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,11 +25,7 @@ public class RecipeDomain {
 
     @Column(nullable = false, length = 150)
     @NotBlank(message = "RECIPE_NAME_REQUIRED")
-    @Size(
-            min = 3,
-            max = 150,
-            message = "RECIPE_NAME_INVALID_LENGTH"
-    )
+    @Size(min = 3, max = 150, message = "RECIPE_NAME_INVALID_LENGTH")
     @Pattern(
             regexp = "^[a-zA-Z0-9ÁÉÍÓÚáéíóúñÑ ]+$",
             message = "RECIPE_NAME_INVALID_FORMAT"
@@ -46,125 +43,64 @@ public class RecipeDomain {
     @ElementCollection
     @CollectionTable(
             name = "recipe_products",
-            joinColumns = @JoinColumn(
-                    name = "recipe_id"
-            )
-    )
-    @Column(
-            name = "product_id",
-            nullable = false
+            joinColumns = @JoinColumn(name = "recipe_id")
     )
     @NotNull(message = "RECIPE_PRODUCTS_REQUIRED")
-    @Size(
-            min = 1,
-            message = "RECIPE_PRODUCTS_EMPTY"
-    )
+    @Size(min = 1, message = "RECIPE_PRODUCTS_EMPTY")
     private List<
-            @NotNull(
-                    message = "RECIPE_PRODUCT_ID_NULL"
-            )
-                    UUID
-            > productIds;
-
+            @Valid
+            @NotNull(message = "RECIPE_PRODUCT_ITEM_NULL")
+                    RecipeProduct
+            > products;
 
     @ElementCollection
     @CollectionTable(
             name = "recipe_subrecipes",
-            joinColumns = @JoinColumn(
-                    name = "recipe_id"
-            )
-    )
-    @Column(
-            name = "subrecipe_id",
-            nullable = false
+            joinColumns = @JoinColumn(name = "recipe_id")
     )
     private List<
-            @NotNull(
-                    message = "RECIPE_SUBRECIPE_ID_NULL"
-            )
-                    UUID
-            > subRecipeIds;
+            @Valid
+            @NotNull(message = "RECIPE_SUBRECIPE_ID_NULL")
+                    RecipeSubRecipe
+            > subRecipes;
 
-
-    @Column(
-            nullable = false,
-            precision = 15,
-            scale = 3
-    )
+    @Column(nullable = false, precision = 15, scale = 3)
     @NotNull(message = "RECIPE_BASE_COST_REQUIRED")
-    @PositiveOrZero(
-            message = "RECIPE_BASE_COST_NEGATIVE"
-    )
+    @PositiveOrZero(message = "RECIPE_BASE_COST_NEGATIVE")
     private BigDecimal baseCost;
 
-
     @Column(nullable = false)
-    @NotNull(
-            message = "RECIPE_PROFIT_MARGIN_REQUIRED"
-    )
-    @PositiveOrZero(
-            message = "RECIPE_PROFIT_MARGIN_NEGATIVE"
-    )
-    @Max(
-            value = 100,
-            message = "RECIPE_PROFIT_MARGIN_INVALID"
-    )
+    @NotNull(message = "RECIPE_PROFIT_MARGIN_REQUIRED")
+    @PositiveOrZero(message = "RECIPE_PROFIT_MARGIN_NEGATIVE")
+    @Max(value = 100, message = "RECIPE_PROFIT_MARGIN_INVALID")
     private Integer profitMargin;
 
-
-    @Column(
-            nullable = false,
-            precision = 15,
-            scale = 3
-    )
-    @NotNull(
-            message = "RECIPE_SELLING_PRICE_REQUIRED"
-    )
-    @PositiveOrZero(
-            message = "RECIPE_SELLING_PRICE_NEGATIVE"
-    )
+    @Column(nullable = false, precision = 15, scale = 3)
+    @NotNull(message = "RECIPE_SELLING_PRICE_REQUIRED")
+    @PositiveOrZero(message = "RECIPE_SELLING_PRICE_NEGATIVE")
     private BigDecimal sellingPrice;
 
-
     @Column(nullable = false)
-    @NotNull(
-            message = "RECIPE_VISIBLE_REQUIRED"
-    )
+    @NotNull(message = "RECIPE_VISIBLE_REQUIRED")
     private Boolean visibleInMenu;
 
-
     @Column(nullable = false)
-    @NotNull(
-            message = "RECIPE_ACTIVE_REQUIRED"
-    )
+    @NotNull(message = "RECIPE_ACTIVE_REQUIRED")
     private Boolean active;
 
-
     @Column(nullable = false)
-    @NotNull(
-            message = "RECIPE_CREATED_AT_REQUIRED"
-    )
+    @NotNull(message = "RECIPE_CREATED_AT_REQUIRED")
     private LocalDateTime createdAt;
 
-
     @Column(nullable = false)
-    @NotNull(
-            message = "RECIPE_UPDATED_AT_REQUIRED"
-    )
+    @NotNull(message = "RECIPE_UPDATED_AT_REQUIRED")
     private LocalDateTime updatedAt;
 
-
     public void deactivate() {
-
-        if (Boolean.FALSE.equals(
-                this.active
-        )) {
+        if (Boolean.FALSE.equals(this.active)) {
             return;
         }
-
         this.active = false;
-
-        this.updatedAt =
-                LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }
