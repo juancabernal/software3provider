@@ -2,6 +2,7 @@ package com.co.eatupapi.services.commercial.customerDiscount;
 
 import com.co.eatupapi.domain.commercial.customerDiscount.CustomerDiscountDomain;
 import com.co.eatupapi.dto.commercial.customerDiscount.CustomerDiscountDTO;
+import com.co.eatupapi.messaging.commercial.customerDiscount.CustomerDiscountEventPublisher;
 import com.co.eatupapi.repositories.commercial.customerDiscount.CustomerDiscountRepository;
 import com.co.eatupapi.utils.commercial.customerDiscount.mapper.CustomerDiscountMapper;
 import com.co.eatupapi.repositories.commercial.discount.DiscountRepository;
@@ -20,15 +21,18 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     private final CustomerDiscountRepository customerDiscountRepository;
     private final CustomerDiscountMapper customerDiscountMapper;
     private final DiscountRepository discountRepository;
+    private final CustomerDiscountEventPublisher customerDiscountEventPublisher;
 
     public CustomerDiscountServiceImpl(
             CustomerDiscountRepository customerDiscountRepository,
             CustomerDiscountMapper customerDiscountMapper,
-            DiscountRepository discountRepository
+            DiscountRepository discountRepository,
+            CustomerDiscountEventPublisher customerDiscountEventPublisher
     ) {
         this.customerDiscountRepository = customerDiscountRepository;
         this.customerDiscountMapper = customerDiscountMapper;
         this.discountRepository = discountRepository;
+        this.customerDiscountEventPublisher = customerDiscountEventPublisher;
     }
 
     @Override
@@ -114,7 +118,9 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
         CustomerDiscountDTO validated = validate(customerDiscount, null);
         CustomerDiscountDomain domain = customerDiscountMapper.toDomain(validated);
         CustomerDiscountDomain saved = customerDiscountRepository.save(domain);
-        return customerDiscountMapper.toDto(saved);
+        CustomerDiscountDTO result = customerDiscountMapper.toDto(saved);
+        customerDiscountEventPublisher.publishCustomerDiscountCreated(result);
+        return result;
     }
 
     @Override
@@ -126,7 +132,11 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
                     existing.setModifiedAt(LocalDateTime.now());
                     return customerDiscountRepository.save(existing);
                 })
-                .map(customerDiscountMapper::toDto);
+                .map(saved -> {
+                    CustomerDiscountDTO result = customerDiscountMapper.toDto(saved);
+                    customerDiscountEventPublisher.publishCustomerDiscountUpdated(result);
+                    return result;
+                });
     }
 
     @Override
@@ -135,6 +145,7 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
             return false;
         }
         customerDiscountRepository.deleteById(id);
+        customerDiscountEventPublisher.publishCustomerDiscountDeleted(id);
         return true;
     }
 

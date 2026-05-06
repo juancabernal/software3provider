@@ -64,6 +64,18 @@ public class CommercialRabbitMQConfig {
     @Value("${rabbitmq.routing-key.sales-delete-request}")
     private String salesDeleteRequestRoutingKey;
 
+    @Value("${rabbitmq.queue.discount}")
+    private String discountQueueName;
+
+    @Value("${rabbitmq.routing-key.discount}")
+    private String discountRoutingKey;
+
+    @Value("${rabbitmq.queue.customer-discount}")
+    private String customerDiscountQueueName;
+
+    @Value("${rabbitmq.routing-key.customer-discount}")
+    private String customerDiscountRoutingKey;
+
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -179,6 +191,26 @@ public class CommercialRabbitMQConfig {
     @Bean
     public Binding salesDeleteRequestBinding(Queue salesDeleteRequestQueue, DirectExchange salesDeleteRequestExchange) {
         return BindingBuilder.bind(salesDeleteRequestQueue).to(salesDeleteRequestExchange).with(salesDeleteRequestRoutingKey);
+    }
+
+    @Bean
+    public Queue discountQueue() {
+        return QueueBuilder.durable(discountQueueName).build();
+    }
+
+    @Bean
+    public Binding discountBinding(Queue discountQueue, DirectExchange commercialExchange) {
+        return BindingBuilder.bind(discountQueue).to(commercialExchange).with(discountRoutingKey);
+    }
+
+    @Bean
+    public Queue customerDiscountQueue() {
+        return QueueBuilder.durable(customerDiscountQueueName).build();
+    }
+
+    @Bean
+    public Binding customerDiscountBinding(Queue customerDiscountQueue, DirectExchange commercialExchange) {
+        return BindingBuilder.bind(customerDiscountQueue).to(commercialExchange).with(customerDiscountRoutingKey);
     }
 
 }
