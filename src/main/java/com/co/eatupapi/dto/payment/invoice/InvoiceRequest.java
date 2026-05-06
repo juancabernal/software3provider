@@ -23,7 +23,6 @@ public class InvoiceRequest {
     private UUID salesId;
 
     @Schema(description = "ID de la relación cliente-descuento")
-    @NotNull(message = "Customer discount ID is required")
     private UUID customerDiscountId;
 
     @Schema(description = "ID de la sede asociada")

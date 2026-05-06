@@ -10,6 +10,7 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,24 @@ public class PaymentRabbitMQConfig {
 
     @Value("${rabbitmq.routing-key.payment.cashreceipt.cancel}")
     private String cancelRoutingKey;
+
+    @Value("${rabbitmq.queue.payment.invoice.create}")
+    private String invoiceCreateQueueName;
+
+    @Value("${rabbitmq.queue.payment.invoice.cancel}")
+    private String invoiceCancelQueueName;
+
+    @Value("${rabbitmq.queue.payment.invoice.mark-paid}")
+    private String invoiceMarkPaidQueueName;
+
+    @Value("${rabbitmq.routing-key.payment.invoice.create}")
+    private String invoiceCreateRoutingKey;
+
+    @Value("${rabbitmq.routing-key.payment.invoice.cancel}")
+    private String invoiceCancelRoutingKey;
+
+    @Value("${rabbitmq.routing-key.payment.invoice.mark-paid}")
+    private String invoiceMarkPaidRoutingKey;
 
     @Bean
     public RabbitAdmin rabbitAdminPayment(ConnectionFactory connectionFactory) {
@@ -68,6 +87,21 @@ public class PaymentRabbitMQConfig {
     }
 
     @Bean
+    public Queue paymentInvoiceCreateQueue() {
+        return QueueBuilder.durable(invoiceCreateQueueName).build();
+    }
+
+    @Bean
+    public Queue paymentInvoiceCancelQueue() {
+        return QueueBuilder.durable(invoiceCancelQueueName).build();
+    }
+
+    @Bean
+    public Queue paymentInvoiceMarkPaidQueue() {
+        return QueueBuilder.durable(invoiceMarkPaidQueueName).build();
+    }
+
+    @Bean
     public Binding paymentCashReceiptCreateBinding(Queue paymentCashReceiptCreateQueue, DirectExchange paymentExchange) {
         return BindingBuilder
                 .bind(paymentCashReceiptCreateQueue)
@@ -81,5 +115,35 @@ public class PaymentRabbitMQConfig {
                 .bind(paymentCashReceiptCancelQueue)
                 .to(paymentExchange)
                 .with(cancelRoutingKey);
+    }
+
+    @Bean
+    public Binding paymentInvoiceCreateBinding(
+            @Qualifier("paymentInvoiceCreateQueue") Queue paymentInvoiceCreateQueue,
+            @Qualifier("paymentExchange") DirectExchange paymentExchange) {
+        return BindingBuilder
+                .bind(paymentInvoiceCreateQueue)
+                .to(paymentExchange)
+                .with(invoiceCreateRoutingKey);
+    }
+
+    @Bean
+    public Binding paymentInvoiceCancelBinding(
+            @Qualifier("paymentInvoiceCancelQueue") Queue paymentInvoiceCancelQueue,
+            @Qualifier("paymentExchange") DirectExchange paymentExchange) {
+        return BindingBuilder
+                .bind(paymentInvoiceCancelQueue)
+                .to(paymentExchange)
+                .with(invoiceCancelRoutingKey);
+    }
+
+    @Bean
+    public Binding paymentInvoiceMarkPaidBinding(
+            @Qualifier("paymentInvoiceMarkPaidQueue") Queue paymentInvoiceMarkPaidQueue,
+            @Qualifier("paymentExchange") DirectExchange paymentExchange) {
+        return BindingBuilder
+                .bind(paymentInvoiceMarkPaidQueue)
+                .to(paymentExchange)
+                .with(invoiceMarkPaidRoutingKey);
     }
 }

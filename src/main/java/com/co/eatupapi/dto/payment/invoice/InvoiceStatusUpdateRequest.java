@@ -16,7 +16,7 @@ public class InvoiceStatusUpdateRequest {
     @Schema(
             description = "Nuevo estado de la factura",
             example = "CLOSED",
-            allowableValues = {"OPEN", "CLOSED", "CANCELLED"}
+            allowableValues = {"OPEN", "PENDING", "PARTIALLY_PAID", "PAID", "VOIDED", "CLOSED", "CANCELLED"}
     )
     @NotNull(message = "Status is required")
     private InvoiceStatus status;
