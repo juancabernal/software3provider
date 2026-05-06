@@ -16,15 +16,14 @@ headers {
 
 body:json {
     {
-      "email": "juan.bernal@gmail.com",
-      "password": "Abcd1234*"
+      "email": "{{createdEmail}}",
+      "password": "{{loginPassword}}"
     }
 }
 
 vars:pre-request {
   baseUrl: http://localhost:8080
-  loginEmail: qa.user.1775891830779@example.com
-  loginPassword: Abcd1234!
+  loginPassword: Abcd1234*
 }
 
 script:post-response {

@@ -6,6 +6,7 @@ import com.co.eatupapi.dto.user.CreateUserRequest;
 import com.co.eatupapi.dto.user.UpdateUserRequest;
 import com.co.eatupapi.dto.user.UserResponse;
 import com.co.eatupapi.dto.user.UserSummaryResponse;
+import com.co.eatupapi.mensajeria.user.UserCommandPublisher;
 import com.co.eatupapi.repositories.user.UserRepository;
 import com.co.eatupapi.utils.user.exceptions.UserBusinessException;
 import com.co.eatupapi.utils.user.exceptions.UserNotFoundException;
@@ -48,15 +49,18 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final CatalogService catalogService;
+    private final UserCommandPublisher userCommandPublisher;
 
     public UserServiceImpl(UserRepository userRepository,
                            UserMapper userMapper,
                            PasswordEncoder passwordEncoder,
-                           CatalogService catalogService) {
+                           CatalogService catalogService,
+                           UserCommandPublisher userCommandPublisher) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.catalogService = catalogService;
+        this.userCommandPublisher = userCommandPublisher;
     }
 
     @Override
@@ -71,6 +75,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setStatus(UserStatus.ACTIVE);
         user.setCreatedAt(LocalDateTime.now());
+        userCommandPublisher.publishCreate(request);
         user.setModifiedAt(LocalDateTime.now());
 
         UserDomain saved = saveUser(user);
@@ -124,6 +129,7 @@ public class UserServiceImpl implements UserService {
         existing.setModifiedAt(LocalDateTime.now());
 
         UserDomain saved = saveUser(existing);
+        userCommandPublisher.publishUpdate(userId, request);
         return enrichResponse(userMapper.toResponse(saved), saved);
     }
 
@@ -136,6 +142,7 @@ public class UserServiceImpl implements UserService {
         existing.setModifiedAt(LocalDateTime.now());
 
         UserDomain saved = saveUser(existing);
+        userCommandPublisher.publishStatusUpdate(userId, status);
         return enrichResponse(userMapper.toResponse(saved), saved);
     }
 
