@@ -27,7 +27,7 @@ public interface CustomerDiscountService {
 
     List<CustomerDiscountDTO> getCustomersByDiscountId(UUID discountId);
 
-    Optional<CustomerDiscountDTO> updateCustomerDiscount(UUID id, CustomerDiscountDTO customerDiscount);
+    CustomerDiscountDTO updateCustomerDiscount(UUID id, CustomerDiscountDTO customerDiscount);
 
-    boolean deleteCustomerDiscount(UUID id);
+    void deleteCustomerDiscount(UUID id);
 }

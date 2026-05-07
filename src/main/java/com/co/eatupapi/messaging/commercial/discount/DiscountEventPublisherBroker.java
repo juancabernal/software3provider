@@ -25,12 +25,17 @@ public class DiscountEventPublisherBroker implements DiscountEventPublisher {
 
     @Override
     public void publishDiscountCreated(DiscountDTO discount) {
-        sendEvent("DISCOUNT_CREATED", discount.getId().toString(), discount);
+        sendEvent("DISCOUNT_CREATED", null, discount); // id es null en create, está bien
     }
 
     @Override
     public void publishDiscountUpdated(DiscountDTO discount) {
         sendEvent("DISCOUNT_UPDATED", discount.getId().toString(), discount);
+    }
+
+    @Override
+    public void publishDiscountStatusUpdated(DiscountDTO discount) {
+        sendEvent("DISCOUNT_STATUS_UPDATED", discount.getId().toString(), discount);
     }
 
     @Override

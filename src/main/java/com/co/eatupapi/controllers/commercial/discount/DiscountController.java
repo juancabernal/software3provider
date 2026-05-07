@@ -21,57 +21,40 @@ public class DiscountController {
     }
 
     @GetMapping
-    public List<DiscountDTO> getAllDiscounts() {
-        return discountService.getAllDiscounts();
+    public ResponseEntity<List<DiscountDTO>> getAllDiscounts() {
+        return ResponseEntity.ok(discountService.getAllDiscounts());
     }
 
     @GetMapping("/active")
-    public List<DiscountDTO> getActiveDiscounts() {
-        return discountService.getActiveDiscounts();
+    public ResponseEntity<List<DiscountDTO>> getActiveDiscounts() {
+        return ResponseEntity.ok(discountService.getActiveDiscounts());
     }
 
     @GetMapping("/{discountId}")
-    public ResponseEntity<?> getDiscountById(@PathVariable UUID discountId) {
-        return discountService.getDiscountById(discountId)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "Descuento no encontrado con id: " + discountId)));
+    public ResponseEntity<DiscountDTO> getDiscountById(@PathVariable UUID discountId) {
+        return ResponseEntity.ok(discountService.getDiscountById(discountId));
     }
 
     @PostMapping
     public ResponseEntity<DiscountDTO> createDiscount(@RequestBody DiscountDTO discountDto) {
-        DiscountDTO created = discountService.createDiscount(discountDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(discountService.createDiscount(discountDto));
     }
 
     @PutMapping("/{discountId}")
-    public ResponseEntity<?> updateDiscount(
-            @PathVariable UUID discountId,
-            @RequestBody DiscountDTO discountDto
-    ) {
-        return discountService.updateDiscount(discountId, discountDto)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "Descuento no encontrado con id: " + discountId)));
+    public ResponseEntity<DiscountDTO> updateDiscount(@PathVariable UUID discountId,
+                                                      @RequestBody DiscountDTO discountDto) {
+        return ResponseEntity.ok(discountService.updateDiscount(discountId, discountDto));
     }
 
     @PatchMapping("/{discountId}/status")
-    public ResponseEntity<?> updateDiscountStatus(
-            @PathVariable UUID discountId,
-            @RequestBody Map<String, Boolean> request
-    ) {
-        return discountService.updateDiscountStatus(discountId, request.get("status"))
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "Descuento no encontrado con id: " + discountId)));
+    public ResponseEntity<DiscountDTO> updateDiscountStatus(@PathVariable UUID discountId,
+                                                            @RequestBody Map<String, Boolean> request) {
+        return ResponseEntity.ok(discountService.updateDiscountStatus(discountId, request.get("status")));
     }
 
     @DeleteMapping("/{discountId}")
-    public ResponseEntity<?> deleteDiscount(@PathVariable UUID discountId) {
-        if (discountService.deleteDiscount(discountId)) {
-            return ResponseEntity.ok(Map.of("message", "Descuento eliminado con exito"));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Descuento no encontrado con id: " + discountId));
+    public ResponseEntity<Void> deleteDiscount(@PathVariable UUID discountId) {
+        discountService.deleteDiscount(discountId);
+        return ResponseEntity.ok().build();
     }
 }

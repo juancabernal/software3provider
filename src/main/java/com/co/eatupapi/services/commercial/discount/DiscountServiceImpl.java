@@ -2,7 +2,6 @@ package com.co.eatupapi.services.commercial.discount;
 
 
 
-import com.co.eatupapi.domain.commercial.discount.DiscountDomain;
 import com.co.eatupapi.dto.commercial.discount.DiscountDTO;
 
 import com.co.eatupapi.messaging.commercial.discount.DiscountEventPublisher;
@@ -10,9 +9,7 @@ import com.co.eatupapi.repositories.commercial.discount.DiscountRepository;
 import com.co.eatupapi.utils.commercial.discount.mapper.DiscountMapper;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -40,90 +37,77 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Override
-    public Optional<DiscountDTO> getDiscountById(UUID id) {
-        return discountRepository.findById(id).map(discountMapper::toDto);
+    public DiscountDTO getDiscountById(UUID id) {
+        return discountRepository.findById(id)
+                .map(discountMapper::toDto)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Descuento no encontrado con id: " + id));
     }
 
     @Override
     public DiscountDTO createDiscount(DiscountDTO discount) {
         DiscountDTO validated = validate(discount, null);
-        DiscountDomain domain = discountMapper.toDomain(validated);
-        DiscountDomain saved = discountRepository.save(domain);
-        DiscountDTO result = discountMapper.toDto(saved);
-        discountEventPublisher.publishDiscountCreated(result);
-        return result;
+        discountEventPublisher.publishDiscountCreated(validated);
+        return validated;
     }
 
     @Override
-    public Optional<DiscountDTO> updateDiscount(UUID id, DiscountDTO discount) {
+    public DiscountDTO updateDiscount(UUID id, DiscountDTO discount) {
+        if (!discountRepository.existsById(id)) {
+            throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
+        }
         DiscountDTO validated = validate(discount, id);
-        return discountRepository.findById(id)
-                .map(existing -> {
-                    discountMapper.updateDomain(existing, validated);
-                    existing.setModifiedAt(LocalDateTime.now());
-                    return discountRepository.save(existing);
-                })
-                .map(saved -> {
-                    DiscountDTO result = discountMapper.toDto(saved);
-                    discountEventPublisher.publishDiscountUpdated(result);
-                    return result;
-                });
+        validated.setId(id);
+        discountEventPublisher.publishDiscountUpdated(validated);
+        return validated;
     }
 
     @Override
-    public Optional<DiscountDTO> updateDiscountStatus(UUID id, Boolean status) {
+    public DiscountDTO updateDiscountStatus(UUID id, Boolean status) {
         if (status == null) {
             throw new IllegalArgumentException("status es obligatorio");
         }
-        return discountRepository.findById(id)
-                .map(existing -> {
-                    existing.setStatus(status);
-                    existing.setModifiedAt(LocalDateTime.now());
-                    return discountRepository.save(existing);
-                })
-                .map(discountMapper::toDto);
+        if (!discountRepository.existsById(id)) {
+            throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
+        }
+        DiscountDTO dto = new DiscountDTO();
+        dto.setId(id);
+        dto.setStatus(status);
+        discountEventPublisher.publishDiscountStatusUpdated(dto);
+        return dto;
     }
 
     @Override
-    public boolean deleteDiscount(UUID id) {
+    public void deleteDiscount(UUID id) {
         if (!discountRepository.existsById(id)) {
-            return false;
+            throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
         }
-        discountRepository.deleteById(id);
         discountEventPublisher.publishDiscountDeleted(id);
-        return true;
     }
 
-    private DiscountDTO validate(DiscountDTO discount,  UUID excludeId) {
-
+    private DiscountDTO validate(DiscountDTO discount, UUID excludeId) {
         if (discount.getPercentage() == null)
             throw new IllegalArgumentException("percentage es obligatorio");
-
         if (discount.getPercentage() < 1 || discount.getPercentage() > 100)
             throw new IllegalArgumentException("percentage debe estar entre 1 y 100");
-
-        if (discount.getCategoryId() == null) {
+        if (discount.getCategoryId() == null)
             throw new IllegalArgumentException("categoryId es obligatorio");
-        }
-        if (discount.getDescription() == null || discount.getDescription().isBlank()) {
+        if (discount.getDescription() == null || discount.getDescription().isBlank())
             throw new IllegalArgumentException("description es obligatoria");
-        }
-        if (discount.getDescription().length() < 5 || discount.getDescription().length() > 100) {
+        if (discount.getDescription().length() < 5 || discount.getDescription().length() > 100)
             throw new IllegalArgumentException("description debe tener entre 5 y 100 caracteres");
-        }
-        if (discount.getStatus() == null) {
+        if (discount.getStatus() == null)
             discount.setStatus(Boolean.TRUE);
-        }
+
         boolean duplicado = excludeId != null
                 ? discountRepository.existsByCategoryIdAndDescriptionAndIdNot(
                 discount.getCategoryId(), discount.getDescription(), excludeId)
                 : discountRepository.existsByCategoryIdAndDescription(
                 discount.getCategoryId(), discount.getDescription());
 
-        if (duplicado) {
-            throw new IllegalArgumentException(
-                    "Ya existe un descuento con esa descripcion en esta categoria");
-        }
+        if (duplicado)
+            throw new IllegalArgumentException("Ya existe un descuento con esa descripcion en esta categoria");
+
         return discount;
     }
 }

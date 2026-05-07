@@ -14,14 +14,14 @@ public interface DiscountService {
 
     List<DiscountDTO> getActiveDiscounts();
 
-    Optional<DiscountDTO> getDiscountById(UUID id);
+    DiscountDTO getDiscountById(UUID id);
 
     DiscountDTO createDiscount(DiscountDTO discount);
 
-    Optional<DiscountDTO> updateDiscount(UUID id, DiscountDTO discount);
+    DiscountDTO updateDiscount(UUID id, DiscountDTO discount);
 
 
-    Optional<DiscountDTO> updateDiscountStatus(UUID id, Boolean status);
+    DiscountDTO updateDiscountStatus(UUID id, Boolean status);
 
-    boolean deleteDiscount(UUID id);
+    void deleteDiscount(UUID id);
 }

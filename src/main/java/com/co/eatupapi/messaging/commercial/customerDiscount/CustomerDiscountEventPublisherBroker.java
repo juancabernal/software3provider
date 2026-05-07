@@ -25,7 +25,7 @@ public class CustomerDiscountEventPublisherBroker implements CustomerDiscountEve
 
     @Override
     public void publishCustomerDiscountCreated(CustomerDiscountDTO customerDiscount) {
-        sendEvent("CUSTOMER_DISCOUNT_CREATED", customerDiscount.getId().toString(), customerDiscount);
+        sendEvent("CUSTOMER_DISCOUNT_CREATED", null, customerDiscount);
     }
 
     @Override
