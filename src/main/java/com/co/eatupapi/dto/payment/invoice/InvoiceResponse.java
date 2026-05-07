@@ -1,6 +1,7 @@
 package com.co.eatupapi.dto.payment.invoice;
 
 import com.co.eatupapi.domain.payment.invoice.InvoiceStatus;
+import com.co.eatupapi.dto.payment.invoice.detail.InvoiceDetailResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -55,6 +57,18 @@ public class InvoiceResponse {
     @Schema(description = "Descripción del descuento resuelto desde descuentos")
     private String discountDescription;
 
+    @Schema(description = "Subtotal antes de descuentos e impuestos", example = "15000.00")
+    private BigDecimal subtotal;
+
+    @Schema(description = "Valor descontado", example = "1500.00")
+    private BigDecimal discountAmount;
+
+    @Schema(description = "Valor de impuestos", example = "0.00")
+    private BigDecimal taxAmount;
+
     @Schema(description = "Precio total", example = "15000.00")
     private BigDecimal totalPrice;
+
+    @Schema(description = "Snapshot basico de los detalles facturados")
+    private List<InvoiceDetailResponse> details;
 }

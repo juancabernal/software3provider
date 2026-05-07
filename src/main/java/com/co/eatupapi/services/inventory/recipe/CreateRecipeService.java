@@ -2,6 +2,7 @@ package com.co.eatupapi.services.inventory.recipe;
 
 import com.co.eatupapi.domain.inventory.recipe.RecipeDomain;
 import com.co.eatupapi.dto.inventory.recipe.RecipeRequest;
+import com.co.eatupapi.dto.inventory.recipe.RecipeSubRecipeRequest;
 import com.co.eatupapi.repositories.inventory.recipe.RecipeRepository;
 import com.co.eatupapi.utils.inventory.recipe.exceptions.ErrorCode;
 import com.co.eatupapi.utils.inventory.recipe.exceptions.RecipeBusinessException;
@@ -48,14 +49,14 @@ public class CreateRecipeService {
     public void run(RecipeRequest request) {
 
         validatePreviousExistence(request.getName());
-        validateSubRecipesIfPresent(request.getSubRecipeIds());
+        validateSubRecipesIfPresent(request);
 
         UUID id = idService.run();
 
         RecipeDomain recipe = mapper.toNewDomain(request, id);
 
-        if (recipe.getSubRecipeIds() == null) {
-            recipe.setSubRecipeIds(List.of());
+        if (recipe.getSubRecipes() == null) {
+            recipe.setSubRecipes(List.of());
         }
 
         BigDecimal baseCost = costService.run(request);
@@ -84,12 +85,17 @@ public class CreateRecipeService {
         }
     }
 
-    private void validateSubRecipesIfPresent(List<UUID> subRecipeIds) {
+    private void validateSubRecipesIfPresent(RecipeRequest request) {
 
-        if (subRecipeIds == null || subRecipeIds.isEmpty()) {
+        if (request.getSubRecipes() == null || request.getSubRecipes().isEmpty()) {
             return;
         }
 
-        existenceValidator.run(subRecipeIds);
+        List<UUID> ids = request.getSubRecipes()
+                .stream()
+                .map(RecipeSubRecipeRequest::getSubRecipeId)
+                .toList();
+
+        existenceValidator.run(ids);
     }
 }

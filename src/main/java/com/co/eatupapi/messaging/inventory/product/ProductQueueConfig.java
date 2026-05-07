@@ -6,20 +6,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductQueueConfig {
 
-    // =========================
-    // EXCHANGE
-    // =========================
     @Value("${rabbitmq.exchange.product}")
     private String productExchangeName;
 
-    // =========================
-    // ROUTING KEYS
-    // =========================
     @Value("${rabbitmq.routing-key.product.create}")
     private String createRoutingKey;
 
     @Value("${rabbitmq.routing-key.product.update}")
     private String updateRoutingKey;
+
+    @Value("${rabbitmq.routing-key.product.patch}")
+    private String patchRoutingKey;
 
     @Value("${rabbitmq.routing-key.product.stock}")
     private String stockRoutingKey;
@@ -37,6 +34,10 @@ public class ProductQueueConfig {
 
     public String getUpdateRoutingKey() {
         return updateRoutingKey;
+    }
+
+    public String getPatchRoutingKey() {
+        return patchRoutingKey;
     }
 
     public String getStockRoutingKey() {
