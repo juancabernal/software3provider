@@ -36,14 +36,13 @@ public class SellerController {
 
     @Operation(
             summary = "Crear vendedor",
-            description = "Registra un nuevo vendedor. El estado se asigna como ACTIVE automáticamente."
+            description = "Acepta la solicitud de creación del vendedor y publica el evento para que commercial-service lo procese."
     )
-    @ApiResponse(responseCode = "201", description = "Vendedor creado exitosamente")
+    @ApiResponse(responseCode = "202", description = "Solicitud de creación enviada a RabbitMQ")
     @ApiResponse(responseCode = "400", description = "Datos inválidos o vendedor duplicado")
-
     @PostMapping
     public ResponseEntity<SellerDTO> createSeller(@RequestBody SellerDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(sellerService.createSeller(request));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(sellerService.createSeller(request));
     }
 
     @Operation(
@@ -52,7 +51,6 @@ public class SellerController {
     )
     @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente")
     @ApiResponse(responseCode = "400", description = "Valor de status inválido")
-
     @GetMapping
     public ResponseEntity<List<SellerDTO>> getSellers(
             @Parameter(description = "Filtrar por estado: ACTIVE o INACTIVE")
@@ -64,9 +62,8 @@ public class SellerController {
             summary = "Obtener vendedor por ID",
             description = "Retorna el vendedor correspondiente al ID proporcionado."
     )
-    @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente")
-    @ApiResponse(responseCode = "400", description = "Valor de status inválido")
-
+    @ApiResponse(responseCode = "200", description = "Vendedor encontrado")
+    @ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
     @GetMapping("/{sellerId}")
     public ResponseEntity<SellerDTO> getSellerById(
             @Parameter(description = "ID del vendedor") @PathVariable UUID sellerId) {
@@ -75,47 +72,43 @@ public class SellerController {
 
     @Operation(
             summary = "Actualizar vendedor",
-            description = "Actualiza todos los campos del vendedor. El email no puede modificarse."
+            description = "Acepta la solicitud de actualización completa y publica el evento para que commercial-service lo procese."
     )
-
-            @ApiResponse(responseCode = "200", description = "Vendedor encontrado")
-            @ApiResponse(responseCode = "400", description = "Datos inválidos o intento de cambiar email")
-            @ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
-
+    @ApiResponse(responseCode = "202", description = "Solicitud de actualización enviada a RabbitMQ")
+    @ApiResponse(responseCode = "400", description = "Datos inválidos o intento de cambiar email")
+    @ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
     @PutMapping("/{sellerId}")
     public ResponseEntity<SellerDTO> updateSeller(
             @Parameter(description = "ID del vendedor") @PathVariable UUID sellerId,
             @RequestBody SellerDTO request) {
-        return ResponseEntity.ok(sellerService.updateSeller(sellerId, request));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(sellerService.updateSeller(sellerId, request));
     }
 
     @Operation(
             summary = "Actualizar estado del vendedor",
-            description = "Cambia el estado del vendedor a ACTIVE o INACTIVE."
+            description = "Acepta la solicitud de cambio de estado y publica el evento para que commercial-service lo procese."
     )
-    @ApiResponse(responseCode = "200", description = "Estado actualizado exitosamente")
-@ApiResponse(responseCode = "400", description = "Valor de estado inválido")
-@ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
-
+    @ApiResponse(responseCode = "202", description = "Solicitud de cambio de estado enviada a RabbitMQ")
+    @ApiResponse(responseCode = "400", description = "Valor de estado inválido")
+    @ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
     @PatchMapping("/{sellerId}/status")
     public ResponseEntity<SellerDTO> updateStatus(
             @Parameter(description = "ID del vendedor") @PathVariable UUID sellerId,
             @RequestBody SellerStatusUpdateDTO request) {
-        return ResponseEntity.ok(sellerService.updateStatus(sellerId, request.getStatus()));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(sellerService.updateStatus(sellerId, request.getStatus()));
     }
 
     @Operation(
             summary = "Actualizar campos parciales del vendedor",
-            description = "Actualiza solo los campos enviados en el body. Los campos omitidos o null no se modifican."
+            description = "Acepta la solicitud de actualización parcial y publica el evento para que commercial-service lo procese."
     )
-            @ApiResponse(responseCode = "200", description = "Vendedor actualizado exitosamente")
-            @ApiResponse(responseCode = "400", description = "Datos inválidos")
-            @ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
-
+    @ApiResponse(responseCode = "202", description = "Solicitud de actualización parcial enviada a RabbitMQ")
+    @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    @ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
     @PatchMapping("/{sellerId}")
     public ResponseEntity<SellerDTO> patchSeller(
             @Parameter(description = "ID del vendedor") @PathVariable UUID sellerId,
             @RequestBody SellerPatchDTO request) {
-        return ResponseEntity.ok(sellerService.patchSeller(sellerId, request));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(sellerService.patchSeller(sellerId, request));
     }
 }
