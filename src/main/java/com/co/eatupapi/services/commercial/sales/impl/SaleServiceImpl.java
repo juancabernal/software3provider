@@ -1,9 +1,12 @@
 package com.co.eatupapi.services.commercial.sales.impl;
 
+import com.co.eatupapi.domain.commercial.sales.SaleDetailDomain;
 import com.co.eatupapi.domain.commercial.sales.SaleDomain;
 import com.co.eatupapi.domain.commercial.sales.SaleStatus;
 import com.co.eatupapi.dto.commercial.sales.SaleAsyncResponseDTO;
+import com.co.eatupapi.dto.commercial.sales.SaleDeleteDetailMessageDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleDeleteRequestedMessage;
+import com.co.eatupapi.dto.commercial.sales.SaleDeleteSnapshotDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleDetailDTO;
 import com.co.eatupapi.dto.commercial.sales.SalePatchDTO;
 import com.co.eatupapi.dto.commercial.sales.SalePatchRequestedMessage;
@@ -94,11 +97,10 @@ public class SaleServiceImpl implements SaleService {
     @Transactional(readOnly = true)
     public SaleAsyncResponseDTO deleteSale(UUID id) {
         SaleDomain existingSale = findSaleOrThrow(id);
-        if (existingSale.getStatus() == SaleStatus.COMPLETED) {
-            throw new SaleBusinessException("No se puede eliminar una venta completada.");
-        }
+        ensureSaleCanBeDeleted(existingSale);
 
-        saleEventPublisher.publishDeleteRequested(new SaleDeleteRequestedMessage(saleMapper.toDto(existingSale)));
+        SaleDeleteRequestedMessage message = buildSaleDeleteRequestedMessage(existingSale);
+        saleEventPublisher.publishDeleteRequested(message);
 
         return new SaleAsyncResponseDTO("La solicitud de eliminación fue recibida y será procesada.", LocalDateTime.now());
     }
@@ -106,6 +108,42 @@ public class SaleServiceImpl implements SaleService {
     private SaleDomain findSaleOrThrow(UUID id) {
         return saleRepository.findById(id)
                 .orElseThrow(() -> new SaleNotFoundException(VENTA_NO_ENCONTRADA + id));
+    }
+
+    private void ensureSaleCanBeDeleted(SaleDomain existingSale) {
+        if (existingSale.getStatus() == SaleStatus.COMPLETED) {
+            throw new SaleBusinessException("No se puede eliminar una venta completada.");
+        }
+    }
+
+    private SaleDeleteRequestedMessage buildSaleDeleteRequestedMessage(SaleDomain sale) {
+        SaleDeleteRequestedMessage message = new SaleDeleteRequestedMessage();
+
+        SaleDeleteSnapshotDTO saleSnapshot = new SaleDeleteSnapshotDTO();
+        saleSnapshot.setId(sale.getId());
+        saleSnapshot.setLocationId(sale.getLocationId());
+        saleSnapshot.setSellerId(sale.getSellerId());
+        saleSnapshot.setTableId(sale.getTableId());
+
+        List<SaleDeleteDetailMessageDTO> details = sale.getDetails().stream()
+                .map(this::toSaleDeleteDetailMessage)
+                .toList();
+
+        saleSnapshot.setDetails(details);
+        message.setSale(saleSnapshot);
+
+        return message;
+    }
+
+    private SaleDeleteDetailMessageDTO toSaleDeleteDetailMessage(SaleDetailDomain detail) {
+        SaleDeleteDetailMessageDTO dto = new SaleDeleteDetailMessageDTO();
+        dto.setRecipeId(detail.getRecipeId());
+        dto.setLineDisplayName(detail.getLineDisplayName());
+        dto.setRecipeLineComment(detail.getRecipeLineComment());
+        dto.setQuantity(detail.getQuantity());
+        dto.setUnitPrice(detail.getUnitPrice());
+        dto.setSubtotal(detail.getSubtotal());
+        return dto;
     }
 
     private void validateRequiredSalePayload(SaleRequestDTO request) {
