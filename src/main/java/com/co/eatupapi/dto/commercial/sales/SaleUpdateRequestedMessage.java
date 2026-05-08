@@ -2,30 +2,30 @@ package com.co.eatupapi.dto.commercial.sales;
 
 public class SaleUpdateRequestedMessage {
 
-    private SaleResponseDTO oldSale;
-    private SaleRequestDTO newSale;
+    private SaleUpdateSnapshotDTO oldSale;
+    private SaleUpdateRequestSnapshotDTO newSale;
 
     public SaleUpdateRequestedMessage() {
     }
 
-    public SaleUpdateRequestedMessage(SaleResponseDTO oldSale, SaleRequestDTO newSale) {
+    public SaleUpdateRequestedMessage(SaleUpdateSnapshotDTO oldSale, SaleUpdateRequestSnapshotDTO newSale) {
         this.oldSale = oldSale;
         this.newSale = newSale;
     }
 
-    public SaleResponseDTO getOldSale() {
+    public SaleUpdateSnapshotDTO getOldSale() {
         return oldSale;
     }
 
-    public void setOldSale(SaleResponseDTO oldSale) {
+    public void setOldSale(SaleUpdateSnapshotDTO oldSale) {
         this.oldSale = oldSale;
     }
 
-    public SaleRequestDTO getNewSale() {
+    public SaleUpdateRequestSnapshotDTO getNewSale() {
         return newSale;
     }
 
-    public void setNewSale(SaleRequestDTO newSale) {
+    public void setNewSale(SaleUpdateRequestSnapshotDTO newSale) {
         this.newSale = newSale;
     }
 }
