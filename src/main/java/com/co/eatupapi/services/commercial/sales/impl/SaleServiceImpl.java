@@ -12,7 +12,10 @@ import com.co.eatupapi.dto.commercial.sales.SalePatchDTO;
 import com.co.eatupapi.dto.commercial.sales.SalePatchRequestedMessage;
 import com.co.eatupapi.dto.commercial.sales.SaleRequestDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleResponseDTO;
+import com.co.eatupapi.dto.commercial.sales.SaleUpdateDetailMessageDTO;
+import com.co.eatupapi.dto.commercial.sales.SaleUpdateRequestSnapshotDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleUpdateRequestedMessage;
+import com.co.eatupapi.dto.commercial.sales.SaleUpdateSnapshotDTO;
 import com.co.eatupapi.messaging.commercial.sales.SaleEventPublisher;
 import com.co.eatupapi.repositories.commercial.sales.SaleRepository;
 import com.co.eatupapi.services.commercial.sales.SaleService;
@@ -68,10 +71,11 @@ public class SaleServiceImpl implements SaleService {
     @Transactional(readOnly = true)
     public SaleAsyncResponseDTO updateSale(UUID id, SaleRequestDTO request) {
         SaleDomain existingSale = findSaleOrThrow(id);
+        ensureSaleCanBeUpdated(existingSale);
         validateRequiredSalePayload(request);
         validateSaleLineItems(request.getDetails());
 
-        SaleUpdateRequestedMessage message = new SaleUpdateRequestedMessage(saleMapper.toDto(existingSale), request);
+        SaleUpdateRequestedMessage message = buildSaleUpdateRequestedMessage(existingSale, request);
         saleEventPublisher.publishUpdateRequested(message);
 
         return new SaleAsyncResponseDTO("La solicitud de actualización fue recibida y será procesada.", LocalDateTime.now());
@@ -114,6 +118,52 @@ public class SaleServiceImpl implements SaleService {
         if (existingSale.getStatus() == SaleStatus.COMPLETED) {
             throw new SaleBusinessException("No se puede eliminar una venta completada.");
         }
+    }
+
+
+    private void ensureSaleCanBeUpdated(SaleDomain existingSale) {
+        if (existingSale.getStatus() == SaleStatus.COMPLETED) {
+            throw new SaleBusinessException("No se puede actualizar una venta completada.");
+        }
+    }
+
+    private SaleUpdateRequestedMessage buildSaleUpdateRequestedMessage(SaleDomain existingSale, SaleRequestDTO request) {
+        SaleUpdateSnapshotDTO oldSale = new SaleUpdateSnapshotDTO();
+        oldSale.setId(existingSale.getId());
+        oldSale.setLocationId(existingSale.getLocationId());
+        oldSale.setSellerId(existingSale.getSellerId());
+        oldSale.setTableId(existingSale.getTableId());
+        oldSale.setDetails(existingSale.getDetails().stream().map(this::toSaleUpdateDetailMessage).toList());
+
+        SaleUpdateRequestSnapshotDTO newSale = new SaleUpdateRequestSnapshotDTO();
+        newSale.setLocationId(request.getLocationId());
+        newSale.setSellerId(request.getSellerId());
+        newSale.setTableId(request.getTableId());
+        newSale.setDetails(request.getDetails().stream().map(this::toSaleUpdateDetailMessage).toList());
+
+        return new SaleUpdateRequestedMessage(oldSale, newSale);
+    }
+
+    private SaleUpdateDetailMessageDTO toSaleUpdateDetailMessage(SaleDetailDomain detail) {
+        SaleUpdateDetailMessageDTO dto = new SaleUpdateDetailMessageDTO();
+        dto.setRecipeId(detail.getRecipeId());
+        dto.setLineDisplayName(detail.getLineDisplayName());
+        dto.setRecipeLineComment(detail.getRecipeLineComment());
+        dto.setQuantity(detail.getQuantity());
+        dto.setUnitPrice(detail.getUnitPrice());
+        dto.setSubtotal(detail.getSubtotal());
+        return dto;
+    }
+
+    private SaleUpdateDetailMessageDTO toSaleUpdateDetailMessage(SaleDetailDTO detail) {
+        SaleUpdateDetailMessageDTO dto = new SaleUpdateDetailMessageDTO();
+        dto.setRecipeId(detail.getRecipeId());
+        dto.setLineDisplayName(detail.getLineDisplayName());
+        dto.setRecipeLineComment(detail.getRecipeLineComment());
+        dto.setQuantity(detail.getQuantity());
+        dto.setUnitPrice(detail.getUnitPrice());
+        dto.setSubtotal(detail.getQuantity().multiply(detail.getUnitPrice()));
+        return dto;
     }
 
     private SaleDeleteRequestedMessage buildSaleDeleteRequestedMessage(SaleDomain sale) {
