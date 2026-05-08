@@ -58,15 +58,21 @@ public class SellerServiceImpl implements SellerService {
         validateDuplicateIdentification(request.getIdentificationNumber());
         validateDuplicatePhone(request.getPhone());
 
+        LocalDateTime now = LocalDateTime.now();
+
         SellerDomain sellerDomain = sellerMapper.toDomain(request);
+        sellerDomain.setId(UUID.randomUUID());
+        sellerDomain.setDocumentTypeId(request.getDocumentTypeId());
+        sellerDomain.setLocationId(request.getLocationId());
         sellerDomain.setFirstName(request.getFirstName().trim());
         sellerDomain.setLastName(request.getLastName().trim());
         sellerDomain.setIdentificationNumber(request.getIdentificationNumber().trim());
         sellerDomain.setPhone(request.getPhone().trim());
         sellerDomain.setEmail(request.getEmail().trim().toLowerCase());
+        sellerDomain.setCommissionPercentage(request.getCommissionPercentage());
         sellerDomain.setStatus(SellerStatus.ACTIVE);
-        sellerDomain.setCreatedDate(LocalDateTime.now());
-        sellerDomain.setModifiedDate(LocalDateTime.now());
+        sellerDomain.setCreatedDate(now);
+        sellerDomain.setModifiedDate(now);
 
         SellerDTO payload = sellerMapper.toDto(sellerDomain);
         sellerEventPublisher.publishSellerCreated(payload);
