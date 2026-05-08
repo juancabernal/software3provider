@@ -31,12 +31,6 @@ public class CommercialRabbitMQConfig {
     @Value("${rabbitmq.routing-key.sales-create-request}")
     private String salesCreateRequestRoutingKey;
 
-    @Value("${rabbitmq.queue.table}")
-    private String tableQueueName;
-
-    @Value("${rabbitmq.routing-key.table}")
-    private String tableRoutingKey;
-
     @Value("${rabbitmq.exchange.sales-update-request}")
     private String salesUpdateRequestExchangeName;
 
@@ -63,6 +57,25 @@ public class CommercialRabbitMQConfig {
 
     @Value("${rabbitmq.routing-key.sales-delete-request}")
     private String salesDeleteRequestRoutingKey;
+
+    @Value("${rabbitmq.queue.table-crud}")
+    private String tableCrudQueueName;
+
+    @Value("${rabbitmq.routing-key.table-crud}")
+    private String tableCrudRoutingKey;
+
+    @Value("${rabbitmq.queue.table-session}")
+    private String tableSessionQueueName;
+
+    @Value("${rabbitmq.routing-key.table-session}")
+    private String tableSessionRoutingKey;
+
+    @Value("${rabbitmq.queue.table-reservation}")
+    private String tableReservationQueueName;
+
+    @Value("${rabbitmq.routing-key.table-reservation}")
+    private String tableReservationRoutingKey;
+
 
     @Value("${rabbitmq.queue.discount}")
     private String discountQueueName;
@@ -120,18 +133,34 @@ public class CommercialRabbitMQConfig {
                 .with(salesCreateRequestRoutingKey);
     }
 
-
     @Bean
-    public Queue tableQueue() {
-        return QueueBuilder.durable(tableQueueName).build();
+    public Queue tableCrudQueue() {
+        return QueueBuilder.durable(tableCrudQueueName).build();
     }
 
     @Bean
-    public Binding tableBinding(Queue tableQueue, DirectExchange commercialExchange) {
-        return BindingBuilder
-                .bind(tableQueue)
-                .to(commercialExchange)
-                .with(tableRoutingKey);
+    public Binding tableCrudBinding(Queue tableCrudQueue, DirectExchange commercialExchange) {
+        return BindingBuilder.bind(tableCrudQueue).to(commercialExchange).with(tableCrudRoutingKey);
+    }
+
+    @Bean
+    public Queue tableSessionQueue() {
+        return QueueBuilder.durable(tableSessionQueueName).build();
+    }
+
+    @Bean
+    public Binding tableSessionBinding(Queue tableSessionQueue, DirectExchange commercialExchange) {
+        return BindingBuilder.bind(tableSessionQueue).to(commercialExchange).with(tableSessionRoutingKey);
+    }
+
+    @Bean
+    public Queue tableReservationQueue() {
+        return QueueBuilder.durable(tableReservationQueueName).build();
+    }
+
+    @Bean
+    public Binding tableReservationBinding(Queue tableReservationQueue, DirectExchange commercialExchange) {
+        return BindingBuilder.bind(tableReservationQueue).to(commercialExchange).with(tableReservationRoutingKey);
     }
 
 

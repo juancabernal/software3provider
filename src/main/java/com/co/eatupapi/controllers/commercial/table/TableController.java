@@ -13,13 +13,13 @@ import java.util.List;
 @RequestMapping("/commercial/api/v1/tables")
 public class TableController {
 
-    private final TableService service; // Se inyecta la interfaz, no la clase concreta
+    private final TableService service;
 
     public TableController(TableService service) {
         this.service = service;
     }
 
-    // ── TABLE ─────────────────────────────────────────────
+
 
     @PostMapping
     public ResponseEntity<TableDTO> createTable(@Valid @RequestBody TableDTO request) {
