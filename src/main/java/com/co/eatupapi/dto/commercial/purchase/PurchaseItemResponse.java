@@ -16,9 +16,6 @@ public class PurchaseItemResponse {
     @Schema(description = "ID del producto")
     private String productId;
 
-    @Schema(description = "Nombre del producto")
-    private String productName;
-
     @Schema(description = "Cantidad")
     private BigDecimal quantity;
 

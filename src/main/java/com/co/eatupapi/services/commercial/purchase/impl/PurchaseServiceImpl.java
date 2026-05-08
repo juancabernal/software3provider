@@ -135,7 +135,6 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .map(item -> {
                     PurchaseItemMessage itemMessage = new PurchaseItemMessage();
                     itemMessage.setProductId(item.getProductId());
-                    itemMessage.setProductName(item.getProductName());
                     itemMessage.setQuantity(item.getQuantity());
                     itemMessage.setUnitPrice(item.getUnitPrice());
                     itemMessage.setSubtotal(item.getSubtotal());
