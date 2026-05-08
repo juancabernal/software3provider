@@ -1,6 +1,7 @@
 package com.co.eatupapi.messaging.commercial.table;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public class TableCommandEvent {
 
@@ -9,7 +10,7 @@ public class TableCommandEvent {
     private String sessionId;
     private String reservationId;
     private LocalDateTime occurredAt;
-    private Object payload; // CORRECCIÓN: Ahora es Object
+    private Map<String, Object> payload;
 
     public TableCommandEvent() {
     }
@@ -29,6 +30,6 @@ public class TableCommandEvent {
     public LocalDateTime getOccurredAt() { return occurredAt; }
     public void setOccurredAt(LocalDateTime occurredAt) { this.occurredAt = occurredAt; }
 
-    public Object getPayload() { return payload; }
-    public void setPayload(Object payload) { this.payload = payload; }
+    public Map<String, Object> getPayload() { return payload; }
+    public void setPayload(Map<String, Object> payload) { this.payload = payload; }
 }
