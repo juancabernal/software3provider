@@ -2,20 +2,13 @@ package com.co.eatupapi.dto.commercial.sales;
 
 public class SaleDeleteRequestedMessage {
 
-    private SaleResponseDTO sale;
+    private SaleDeleteSnapshotDTO sale;
 
-    public SaleDeleteRequestedMessage() {
-    }
-
-    public SaleDeleteRequestedMessage(SaleResponseDTO sale) {
-        this.sale = sale;
-    }
-
-    public SaleResponseDTO getSale() {
+    public SaleDeleteSnapshotDTO getSale() {
         return sale;
     }
 
-    public void setSale(SaleResponseDTO sale) {
+    public void setSale(SaleDeleteSnapshotDTO sale) {
         this.sale = sale;
     }
 }

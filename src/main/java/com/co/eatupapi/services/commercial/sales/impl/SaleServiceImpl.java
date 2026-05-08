@@ -1,15 +1,21 @@
 package com.co.eatupapi.services.commercial.sales.impl;
 
+import com.co.eatupapi.domain.commercial.sales.SaleDetailDomain;
 import com.co.eatupapi.domain.commercial.sales.SaleDomain;
 import com.co.eatupapi.domain.commercial.sales.SaleStatus;
 import com.co.eatupapi.dto.commercial.sales.SaleAsyncResponseDTO;
+import com.co.eatupapi.dto.commercial.sales.SaleDeleteDetailMessageDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleDeleteRequestedMessage;
+import com.co.eatupapi.dto.commercial.sales.SaleDeleteSnapshotDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleDetailDTO;
 import com.co.eatupapi.dto.commercial.sales.SalePatchDTO;
 import com.co.eatupapi.dto.commercial.sales.SalePatchRequestedMessage;
 import com.co.eatupapi.dto.commercial.sales.SaleRequestDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleResponseDTO;
+import com.co.eatupapi.dto.commercial.sales.SaleUpdateDetailMessageDTO;
+import com.co.eatupapi.dto.commercial.sales.SaleUpdateRequestSnapshotDTO;
 import com.co.eatupapi.dto.commercial.sales.SaleUpdateRequestedMessage;
+import com.co.eatupapi.dto.commercial.sales.SaleUpdateSnapshotDTO;
 import com.co.eatupapi.messaging.commercial.sales.SaleEventPublisher;
 import com.co.eatupapi.repositories.commercial.sales.SaleRepository;
 import com.co.eatupapi.services.commercial.sales.SaleService;
@@ -65,10 +71,11 @@ public class SaleServiceImpl implements SaleService {
     @Transactional(readOnly = true)
     public SaleAsyncResponseDTO updateSale(UUID id, SaleRequestDTO request) {
         SaleDomain existingSale = findSaleOrThrow(id);
+        ensureSaleCanBeUpdated(existingSale);
         validateRequiredSalePayload(request);
         validateSaleLineItems(request.getDetails());
 
-        SaleUpdateRequestedMessage message = new SaleUpdateRequestedMessage(saleMapper.toDto(existingSale), request);
+        SaleUpdateRequestedMessage message = buildSaleUpdateRequestedMessage(existingSale, request);
         saleEventPublisher.publishUpdateRequested(message);
 
         return new SaleAsyncResponseDTO("La solicitud de actualización fue recibida y será procesada.", LocalDateTime.now());
@@ -94,11 +101,10 @@ public class SaleServiceImpl implements SaleService {
     @Transactional(readOnly = true)
     public SaleAsyncResponseDTO deleteSale(UUID id) {
         SaleDomain existingSale = findSaleOrThrow(id);
-        if (existingSale.getStatus() == SaleStatus.COMPLETED) {
-            throw new SaleBusinessException("No se puede eliminar una venta completada.");
-        }
+        ensureSaleCanBeDeleted(existingSale);
 
-        saleEventPublisher.publishDeleteRequested(new SaleDeleteRequestedMessage(saleMapper.toDto(existingSale)));
+        SaleDeleteRequestedMessage message = buildSaleDeleteRequestedMessage(existingSale);
+        saleEventPublisher.publishDeleteRequested(message);
 
         return new SaleAsyncResponseDTO("La solicitud de eliminación fue recibida y será procesada.", LocalDateTime.now());
     }
@@ -106,6 +112,88 @@ public class SaleServiceImpl implements SaleService {
     private SaleDomain findSaleOrThrow(UUID id) {
         return saleRepository.findById(id)
                 .orElseThrow(() -> new SaleNotFoundException(VENTA_NO_ENCONTRADA + id));
+    }
+
+    private void ensureSaleCanBeDeleted(SaleDomain existingSale) {
+        if (existingSale.getStatus() == SaleStatus.COMPLETED) {
+            throw new SaleBusinessException("No se puede eliminar una venta completada.");
+        }
+    }
+
+
+    private void ensureSaleCanBeUpdated(SaleDomain existingSale) {
+        if (existingSale.getStatus() == SaleStatus.COMPLETED) {
+            throw new SaleBusinessException("No se puede actualizar una venta completada.");
+        }
+    }
+
+    private SaleUpdateRequestedMessage buildSaleUpdateRequestedMessage(SaleDomain existingSale, SaleRequestDTO request) {
+        SaleUpdateSnapshotDTO oldSale = new SaleUpdateSnapshotDTO();
+        oldSale.setId(existingSale.getId());
+        oldSale.setLocationId(existingSale.getLocationId());
+        oldSale.setSellerId(existingSale.getSellerId());
+        oldSale.setTableId(existingSale.getTableId());
+        oldSale.setDetails(existingSale.getDetails().stream().map(this::toSaleUpdateDetailMessage).toList());
+
+        SaleUpdateRequestSnapshotDTO newSale = new SaleUpdateRequestSnapshotDTO();
+        newSale.setLocationId(request.getLocationId());
+        newSale.setSellerId(request.getSellerId());
+        newSale.setTableId(request.getTableId());
+        newSale.setDetails(request.getDetails().stream().map(this::toSaleUpdateDetailMessage).toList());
+
+        return new SaleUpdateRequestedMessage(oldSale, newSale);
+    }
+
+    private SaleUpdateDetailMessageDTO toSaleUpdateDetailMessage(SaleDetailDomain detail) {
+        SaleUpdateDetailMessageDTO dto = new SaleUpdateDetailMessageDTO();
+        dto.setRecipeId(detail.getRecipeId());
+        dto.setLineDisplayName(detail.getLineDisplayName());
+        dto.setRecipeLineComment(detail.getRecipeLineComment());
+        dto.setQuantity(detail.getQuantity());
+        dto.setUnitPrice(detail.getUnitPrice());
+        dto.setSubtotal(detail.getSubtotal());
+        return dto;
+    }
+
+    private SaleUpdateDetailMessageDTO toSaleUpdateDetailMessage(SaleDetailDTO detail) {
+        SaleUpdateDetailMessageDTO dto = new SaleUpdateDetailMessageDTO();
+        dto.setRecipeId(detail.getRecipeId());
+        dto.setLineDisplayName(detail.getLineDisplayName());
+        dto.setRecipeLineComment(detail.getRecipeLineComment());
+        dto.setQuantity(detail.getQuantity());
+        dto.setUnitPrice(detail.getUnitPrice());
+        dto.setSubtotal(detail.getQuantity().multiply(detail.getUnitPrice()));
+        return dto;
+    }
+
+    private SaleDeleteRequestedMessage buildSaleDeleteRequestedMessage(SaleDomain sale) {
+        SaleDeleteRequestedMessage message = new SaleDeleteRequestedMessage();
+
+        SaleDeleteSnapshotDTO saleSnapshot = new SaleDeleteSnapshotDTO();
+        saleSnapshot.setId(sale.getId());
+        saleSnapshot.setLocationId(sale.getLocationId());
+        saleSnapshot.setSellerId(sale.getSellerId());
+        saleSnapshot.setTableId(sale.getTableId());
+
+        List<SaleDeleteDetailMessageDTO> details = sale.getDetails().stream()
+                .map(this::toSaleDeleteDetailMessage)
+                .toList();
+
+        saleSnapshot.setDetails(details);
+        message.setSale(saleSnapshot);
+
+        return message;
+    }
+
+    private SaleDeleteDetailMessageDTO toSaleDeleteDetailMessage(SaleDetailDomain detail) {
+        SaleDeleteDetailMessageDTO dto = new SaleDeleteDetailMessageDTO();
+        dto.setRecipeId(detail.getRecipeId());
+        dto.setLineDisplayName(detail.getLineDisplayName());
+        dto.setRecipeLineComment(detail.getRecipeLineComment());
+        dto.setQuantity(detail.getQuantity());
+        dto.setUnitPrice(detail.getUnitPrice());
+        dto.setSubtotal(detail.getSubtotal());
+        return dto;
     }
 
     private void validateRequiredSalePayload(SaleRequestDTO request) {
