@@ -1,7 +1,6 @@
 package com.co.eatupapi.services.commercial.purchase.impl;
 
 import com.co.eatupapi.domain.commercial.purchase.PurchaseDomain;
-import com.co.eatupapi.domain.commercial.purchase.PurchaseItemDomain;
 import com.co.eatupapi.domain.commercial.purchase.PurchaseStatus;
 import com.co.eatupapi.dto.commercial.purchase.CreatePurchaseRequest;
 import com.co.eatupapi.dto.commercial.purchase.PurchaseResponse;
@@ -202,8 +201,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         return request.getItems().stream()
                 .map(item -> {
                     PurchaseItemMessage itemMessage = new PurchaseItemMessage();
-                    itemMessage.setProductId(item.getProductId());
-                    itemMessage.setProductName(item.getProductName());
+                    itemMessage.setProductId(item.getProductId().toString());
                     itemMessage.setQuantity(item.getQuantity());
                     itemMessage.setUnitPrice(item.getUnitPrice());
                     itemMessage.setSubtotal(item.getQuantity().multiply(item.getUnitPrice()));
