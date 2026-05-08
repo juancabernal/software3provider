@@ -27,9 +27,6 @@ public class PurchaseItemDomain {
     @Column(name = "product_id", nullable = false, length = 64)
     private String productId;
 
-    @Column(name = "product_name", nullable = false)
-    private String productName;
-
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal quantity;
 

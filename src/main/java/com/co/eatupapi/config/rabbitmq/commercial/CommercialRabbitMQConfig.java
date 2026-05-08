@@ -103,19 +103,6 @@ public class CommercialRabbitMQConfig {
     }
 
     @Bean
-    public Queue purchaseQueue() {
-        return QueueBuilder.durable(queueName).build();
-    }
-
-    @Bean
-    public Binding purchaseBinding(Queue purchaseQueue, DirectExchange commercialExchange) {
-        return BindingBuilder
-                .bind(purchaseQueue)
-                .to(commercialExchange)
-                .with(routingKey);
-    }
-
-    @Bean
     public DirectExchange salesCreateRequestExchange() {
         return new DirectExchange(salesCreateRequestExchangeName);
     }

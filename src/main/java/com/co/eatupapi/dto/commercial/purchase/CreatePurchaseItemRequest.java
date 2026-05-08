@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,12 +18,8 @@ import java.math.BigDecimal;
 public class CreatePurchaseItemRequest {
 
     @Schema(description = "ID del producto")
-    @NotBlank(message = "Product ID is required")
-    private String productId;
-
-    @Schema(description = "Nombre del producto")
-    @NotBlank(message = "Product name is required")
-    private String productName;
+    @NotNull(message = "Product ID is required")
+    private UUID productId;
 
     @Schema(description = "Cantidad", example = "10.00")
     @NotNull(message = "Quantity is required")
