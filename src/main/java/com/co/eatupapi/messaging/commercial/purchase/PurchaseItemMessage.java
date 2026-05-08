@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 public class PurchaseItemMessage {
 
     private String productId;
-    private String productName;
     private BigDecimal quantity;
     private BigDecimal unitPrice;
     private BigDecimal subtotal;
