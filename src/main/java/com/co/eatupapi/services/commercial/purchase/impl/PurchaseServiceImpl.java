@@ -200,7 +200,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         return request.getItems().stream()
                 .map(item -> {
                     PurchaseItemMessage itemMessage = new PurchaseItemMessage();
-                    itemMessage.setProductId(item.getProductId().toString());
+                    itemMessage.setProductId(item.getProductId());
                     itemMessage.setQuantity(item.getQuantity());
                     itemMessage.setUnitPrice(item.getUnitPrice());
                     itemMessage.setSubtotal(item.getQuantity().multiply(item.getUnitPrice()));

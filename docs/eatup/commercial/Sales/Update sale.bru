@@ -5,13 +5,17 @@ meta {
 }
 
 put {
-  url: http://localhost:8080/commercial/api/v1/sales/{{id}}
+  url: http://localhost:8080/commercial/api/v1/sales/:key
   body: json
   auth: bearer
 }
 
+params:path {
+  key: 5410bd50-76a4-49cb-b5d7-2fcae61d5473
+}
+
 auth:bearer {
-  token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJqdWFuLmJlcm5hbEBnbWFpbC5jb20iLCJpYXQiOjE3NzcxMDA1MjIsImV4cCI6MTc3NzEwNDEyMn0.XiMN82nvgsSilhHCKbMXcb6MzlhYsFVSAw5sDB1F7m0XthyGGLmJ0za37DbUiOqZ
+  token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJqdWFuLmJlcm5hbEBnbWFpbC5jb20iLCJpYXQiOjE3Nzc5MTY0MjAsImV4cCI6MTc3NzkyMDAyMH0.oII_l5-fTAfn7aWcDbJxaZCJsQdpTIadprXI22V6cui4Q0GO4_i04mNtXwpf3Y8w
 }
 
 body:json {

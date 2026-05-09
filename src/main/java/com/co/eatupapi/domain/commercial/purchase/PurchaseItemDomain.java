@@ -24,8 +24,8 @@ public class PurchaseItemDomain {
     @JoinColumn(name = "purchase_id", nullable = false)
     private PurchaseDomain purchase;
 
-    @Column(name = "product_id", nullable = false, length = 64)
-    private String productId;
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal quantity;

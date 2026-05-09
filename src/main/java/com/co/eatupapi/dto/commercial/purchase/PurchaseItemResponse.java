@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 public class PurchaseItemResponse {
 
     @Schema(description = "ID del producto")
-    private String productId;
+    private UUID productId;
 
     @Schema(description = "Cantidad")
     private BigDecimal quantity;
