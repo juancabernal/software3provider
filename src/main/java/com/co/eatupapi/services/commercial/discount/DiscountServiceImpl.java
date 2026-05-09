@@ -10,6 +10,7 @@ import com.co.eatupapi.utils.commercial.discount.mapper.DiscountMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,13 +36,10 @@ public class DiscountServiceImpl implements DiscountService {
     public List<DiscountDTO> getActiveDiscounts() {
         return discountRepository.findByStatus(Boolean.TRUE).stream().map(discountMapper::toDto).toList();
     }
-
-    @Override
-    public DiscountDTO getDiscountById(UUID id) {
+//cambiar cuando facturas quite el acoplamiento y poner discount con id no encontrados
+    public Optional<DiscountDTO> getDiscountById(UUID id) {
         return discountRepository.findById(id)
-                .map(discountMapper::toDto)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Descuento no encontrado con id: " + id));
+                .map(discountMapper::toDto);
     }
 
     @Override

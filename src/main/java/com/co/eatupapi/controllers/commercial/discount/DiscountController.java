@@ -32,8 +32,9 @@ public class DiscountController {
 
     @GetMapping("/{discountId}")
     public ResponseEntity<DiscountDTO> getDiscountById(@PathVariable UUID discountId) {
-        return ResponseEntity.ok(discountService.getDiscountById(discountId));
-    }
+        return ResponseEntity.ok(discountService.getDiscountById(discountId)
+                .orElseThrow(() -> new IllegalArgumentException("Descuento no encontrado con id: " + discountId)));
+    }//cambiar cuando facturas quite el acoplamiento
 
     @PostMapping
     public ResponseEntity<DiscountDTO> createDiscount(@RequestBody DiscountDTO discountDto) {

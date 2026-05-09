@@ -13,8 +13,8 @@ public interface DiscountService {
     List<DiscountDTO> getAllDiscounts();
 
     List<DiscountDTO> getActiveDiscounts();
-
-    DiscountDTO getDiscountById(UUID id);
+//cambiar cuando facturas quite el acoplamiento
+    Optional<DiscountDTO> getDiscountById(UUID id);
 
     DiscountDTO createDiscount(DiscountDTO discount);
 
