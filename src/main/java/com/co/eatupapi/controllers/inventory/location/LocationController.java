@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -38,19 +39,27 @@ public class LocationController {
     }
 
     @PostMapping
-    public ResponseEntity<LocationResponseDTO> create(@Valid @RequestBody LocationRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(locationService.create(request));
+    public ResponseEntity<Map<String, String>> create(@Valid @RequestBody LocationRequestDTO request) {
+        locationService.create(request);
+        return acceptedResponse("Solicitud de creacion de sede enviada a la cola");
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LocationResponseDTO> update(@PathVariable UUID id,
+    public ResponseEntity<Map<String, String>> update(@PathVariable UUID id,
                                                       @Valid @RequestBody LocationRequestDTO request) {
-        return ResponseEntity.ok(locationService.update(id, request));
+        locationService.update(id, request);
+        return acceptedResponse("Solicitud de actualizacion de sede enviada a la cola");
     }
 
     @PatchMapping("/editar/{id}")
-    public ResponseEntity<LocationResponseDTO> patch(@PathVariable UUID id,
+    public ResponseEntity<Map<String, String>> patch(@PathVariable UUID id,
                                                      @Valid @RequestBody LocationPatchDTO patch) {
-        return ResponseEntity.ok(locationService.patchPartial(id, patch));
+        locationService.patchPartial(id, patch);
+        return acceptedResponse("Solicitud de actualizacion parcial de sede enviada a la cola");
+    }
+
+    private ResponseEntity<Map<String, String>> acceptedResponse(String message) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(Map.of("message", message));
     }
 }
