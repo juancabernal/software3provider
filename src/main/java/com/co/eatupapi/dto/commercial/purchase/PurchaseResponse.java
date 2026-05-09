@@ -1,6 +1,7 @@
 package com.co.eatupapi.dto.commercial.purchase;
 
 import com.co.eatupapi.domain.commercial.purchase.PurchaseStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Schema(description = "Respuesta con los datos de una compra")
 public class PurchaseResponse {
 
+    @JsonIgnore
     @Schema(description = "ID único de la compra")
     private UUID id;
 
