@@ -19,6 +19,12 @@ public class DiscountGlobalExceptionHandler {
         body.put("message", ex.getMessage());
         body.put("errorCode", "VALIDATION_ERROR");
         body.put("timestamp", LocalDateTime.now().toString());
+
+        if (ex.getMessage() != null && ex.getMessage().contains("no encontrado")) {
+            body.put("status", HttpStatus.NOT_FOUND.value());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+        }
+
         body.put("status", HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.badRequest().body(body);
     }

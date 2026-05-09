@@ -13,15 +13,15 @@ public interface DiscountService {
     List<DiscountDTO> getAllDiscounts();
 
     List<DiscountDTO> getActiveDiscounts();
-
+//cambiar cuando facturas quite el acoplamiento
     Optional<DiscountDTO> getDiscountById(UUID id);
 
     DiscountDTO createDiscount(DiscountDTO discount);
 
-    Optional<DiscountDTO> updateDiscount(UUID id, DiscountDTO discount);
+    DiscountDTO updateDiscount(UUID id, DiscountDTO discount);
 
 
-    Optional<DiscountDTO> updateDiscountStatus(UUID id, Boolean status);
+    DiscountDTO updateDiscountStatus(UUID id, Boolean status);
 
-    boolean deleteDiscount(UUID id);
+    void deleteDiscount(UUID id);
 }

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -25,17 +24,14 @@ public class CustomerDiscountController {
         return ResponseEntity.ok(customerDiscountService.getAllCustomerDiscounts());
     }
 
-
     @GetMapping("/customer-discounts/{id}")
     public ResponseEntity<CustomerDiscountDTO> getCustomerDiscountById(@PathVariable UUID id) {
         return ResponseEntity.ok(customerDiscountService.getCustomerDiscountById(id));
     }
 
     @GetMapping("/discounts/{discountId}/customers")
-    public ResponseEntity<List<CustomerDiscountDTO>> getCustomersByDiscountId(
-            @PathVariable UUID discountId) {
-        return ResponseEntity.ok(
-                customerDiscountService.getCustomersByDiscountId(discountId));
+    public ResponseEntity<List<CustomerDiscountDTO>> getCustomersByDiscountId(@PathVariable UUID discountId) {
+        return ResponseEntity.ok(customerDiscountService.getCustomersByDiscountId(discountId));
     }
 
     @GetMapping("/customers/{customerId}/discounts")
@@ -59,29 +55,22 @@ public class CustomerDiscountController {
     }
 
     @PostMapping("/customer-discounts")
-    public ResponseEntity<CustomerDiscountDTO> createCustomerDiscount(@RequestBody CustomerDiscountDTO customerDiscountDto) {
-        CustomerDiscountDTO created = customerDiscountService.createCustomerDiscount(customerDiscountDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<CustomerDiscountDTO> createCustomerDiscount(
+            @RequestBody CustomerDiscountDTO customerDiscountDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(customerDiscountService.createCustomerDiscount(customerDiscountDto));
     }
 
     @PutMapping("/customer-discounts/{id}")
-    public ResponseEntity<?> updateCustomerDiscount(
+    public ResponseEntity<CustomerDiscountDTO> updateCustomerDiscount(
             @PathVariable UUID id,
-            @RequestBody CustomerDiscountDTO customerDiscountDto
-    ) {
-        return customerDiscountService.updateCustomerDiscount(id, customerDiscountDto)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "Descuento de cliente no encontrado con id: " + id)));
+            @RequestBody CustomerDiscountDTO customerDiscountDto) {
+        return ResponseEntity.ok(customerDiscountService.updateCustomerDiscount(id, customerDiscountDto));
     }
 
     @DeleteMapping("/customer-discounts/{id}")
-    public ResponseEntity<?> deleteCustomerDiscount(@PathVariable UUID id) {
-        if (customerDiscountService.deleteCustomerDiscount(id)) {
-            return ResponseEntity.ok(Map.of("message", "Se elimino el descuento al cliente con exito"));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Descuento de cliente no encontrado con id: " + id));
+    public ResponseEntity<Void> deleteCustomerDiscount(@PathVariable UUID id) {
+        customerDiscountService.deleteCustomerDiscount(id);
+        return ResponseEntity.ok().build();
     }
-
 }
