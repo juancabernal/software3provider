@@ -1,4 +1,4 @@
-package com.co.eatupapi.mensajeria.user;
+package com.co.eatupapi.messaging.user;
 
 import com.co.eatupapi.dto.user.CreateUserRequest;
 import com.co.eatupapi.dto.user.UpdateUserRequest;
