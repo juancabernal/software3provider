@@ -131,12 +131,6 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     }
 
     private CustomerDiscountDTO validate(CustomerDiscountDTO customerDiscount, UUID excludeId) {
-        if (customerDiscount.getLocationId() == null)
-            throw new ValidationException("locationId es obligatorio");
-        if (customerDiscount.getCustomerId() == null)
-            throw new ValidationException("customerId es obligatorio");
-        if (customerDiscount.getDiscountId() == null)
-            throw new ValidationException("discountId es obligatorio");
         if (customerDiscount.getAssignedAt() != null
                 && customerDiscount.getAssignedAt().isAfter(LocalDate.now()))
             throw new ValidationException("assignedAt no puede ser una fecha futura");

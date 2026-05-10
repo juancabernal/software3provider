@@ -95,16 +95,6 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     private DiscountDTO validate(DiscountDTO discount, UUID excludeId) {
-        if (discount.getPercentage() == null)
-            throw new ValidationException("percentage es obligatorio");
-        if (discount.getPercentage() < 1 || discount.getPercentage() > 100)
-            throw new ValidationException("percentage debe estar entre 1 y 100");
-        if (discount.getCategoryId() == null)
-            throw new ValidationException("categoryId es obligatorio");
-        if (discount.getDescription() == null || discount.getDescription().isBlank())
-            throw new ValidationException("description es obligatoria");
-        if (discount.getDescription().length() < 5 || discount.getDescription().length() > 100)
-            throw new ValidationException("description debe tener entre 5 y 100 caracteres");
         if (discount.getStatus() == null)
             discount.setStatus(Boolean.TRUE);
 
