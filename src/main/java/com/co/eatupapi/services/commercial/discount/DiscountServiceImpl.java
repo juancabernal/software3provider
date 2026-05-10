@@ -6,6 +6,9 @@ import com.co.eatupapi.dto.commercial.discount.DiscountDTO;
 
 import com.co.eatupapi.messaging.commercial.discount.DiscountEventPublisher;
 import com.co.eatupapi.repositories.commercial.discount.DiscountRepository;
+import com.co.eatupapi.utils.commercial.discount.exceptions.BusinessException;
+import com.co.eatupapi.utils.commercial.discount.exceptions.ResourceNotFoundException;
+import com.co.eatupapi.utils.commercial.discount.exceptions.ValidationException;
 import com.co.eatupapi.utils.commercial.discount.mapper.DiscountMapper;
 import org.springframework.stereotype.Service;
 import com.co.eatupapi.dto.commercial.discount.DiscountAsyncResponseDTO;
@@ -54,7 +57,7 @@ public class DiscountServiceImpl implements DiscountService {
     @Override
     public DiscountAsyncResponseDTO updateDiscount(UUID id, DiscountDTO discount) {
         if (!discountRepository.existsById(id)) {
-            throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
+            throw new ResourceNotFoundException("Descuento no encontrado con id: " + id);
         }
         DiscountDTO validated = validate(discount, id);
         validated.setId(id);
@@ -65,10 +68,10 @@ public class DiscountServiceImpl implements DiscountService {
     @Override
     public DiscountAsyncResponseDTO updateDiscountStatus(UUID id, Boolean status) {
         if (status == null) {
-            throw new IllegalArgumentException("status es obligatorio");
+            throw new ValidationException("status es obligatorio");
         }
         if (!discountRepository.existsById(id)) {
-            throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
+            throw new ResourceNotFoundException("Descuento no encontrado con id: " + id);
         }
         DiscountDTO dto = new DiscountDTO();
         dto.setId(id);
@@ -80,7 +83,7 @@ public class DiscountServiceImpl implements DiscountService {
     @Override
     public DiscountAsyncResponseDTO deleteDiscount(UUID id) {
         if (!discountRepository.existsById(id)) {
-            throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
+            throw new ResourceNotFoundException("Descuento no encontrado con id: " + id);
         }
         discountEventPublisher.publishDiscountDeleted(id);
         return new DiscountAsyncResponseDTO("La eliminacion del descuento fue recibida y sera procesada.", LocalDateTime.now());
@@ -88,15 +91,15 @@ public class DiscountServiceImpl implements DiscountService {
 
     private DiscountDTO validate(DiscountDTO discount, UUID excludeId) {
         if (discount.getPercentage() == null)
-            throw new IllegalArgumentException("percentage es obligatorio");
+            throw new ValidationException("percentage es obligatorio");
         if (discount.getPercentage() < 1 || discount.getPercentage() > 100)
-            throw new IllegalArgumentException("percentage debe estar entre 1 y 100");
+            throw new ValidationException("percentage debe estar entre 1 y 100");
         if (discount.getCategoryId() == null)
-            throw new IllegalArgumentException("categoryId es obligatorio");
+            throw new ValidationException("categoryId es obligatorio");
         if (discount.getDescription() == null || discount.getDescription().isBlank())
-            throw new IllegalArgumentException("description es obligatoria");
+            throw new ValidationException("description es obligatoria");
         if (discount.getDescription().length() < 5 || discount.getDescription().length() > 100)
-            throw new IllegalArgumentException("description debe tener entre 5 y 100 caracteres");
+            throw new ValidationException("description debe tener entre 5 y 100 caracteres");
         if (discount.getStatus() == null)
             discount.setStatus(Boolean.TRUE);
 
@@ -107,7 +110,7 @@ public class DiscountServiceImpl implements DiscountService {
                 discount.getCategoryId(), discount.getDescription());
 
         if (duplicado)
-            throw new IllegalArgumentException("Ya existe un descuento con esa descripcion en esta categoria");
+            throw new BusinessException("Ya existe un descuento con esa descripcion en esta categoria");
 
         return discount;
     }

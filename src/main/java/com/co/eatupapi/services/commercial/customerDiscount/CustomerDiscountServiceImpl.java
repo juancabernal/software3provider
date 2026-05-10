@@ -9,6 +9,9 @@ import com.co.eatupapi.repositories.commercial.customerDiscount.CustomerDiscount
 import com.co.eatupapi.utils.commercial.customerDiscount.mapper.CustomerDiscountMapper;
 import com.co.eatupapi.repositories.commercial.discount.DiscountRepository;
 import com.co.eatupapi.domain.commercial.discount.DiscountDomain;
+import com.co.eatupapi.utils.commercial.customerDiscount.exceptions.BusinessException;
+import com.co.eatupapi.utils.commercial.customerDiscount.exceptions.ResourceNotFoundException;
+import com.co.eatupapi.utils.commercial.customerDiscount.exceptions.ValidationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -45,7 +48,7 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     public CustomerDiscountDTO getCustomerDiscountById(UUID customerDiscountId) {
         return customerDiscountRepository.findById(customerDiscountId)
                 .map(customerDiscountMapper::toDto)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "CustomerDiscount no encontrado con id: " + customerDiscountId));
     }
 
@@ -71,24 +74,24 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     public CustomerDiscountDTO getApplicableCustomerDiscount(UUID customerDiscountId,
                                                              UUID customerId, UUID locationId) {
         CustomerDiscountDomain domain = customerDiscountRepository.findById(customerDiscountId)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "CustomerDiscount no encontrado con id: " + customerDiscountId));
 
         if (!domain.getCustomerId().equals(customerId))
-            throw new IllegalArgumentException("El descuento no pertenece al cliente indicado");
+            throw new BusinessException("El descuento no pertenece al cliente indicado");
         if (!domain.getLocationId().equals(locationId))
-            throw new IllegalArgumentException("El descuento no pertenece a la sede indicada");
+            throw new BusinessException("El descuento no pertenece a la sede indicada");
 
         DiscountDomain discount = discountRepository.findById(domain.getDiscountId())
-                .orElseThrow(() -> new IllegalArgumentException("El descuento asociado no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("El descuento asociado no existe"));
         if (!Boolean.TRUE.equals(discount.getStatus()))
-            throw new IllegalArgumentException("El descuento asociado no esta activo");
+            throw new BusinessException("El descuento asociado no esta activo");
 
         LocalDate hoy = LocalDate.now();
         if (domain.getStartDate() != null && hoy.isBefore(domain.getStartDate()))
-            throw new IllegalArgumentException("El descuento aun no esta vigente");
+            throw new BusinessException("El descuento aun no esta vigente");
         if (domain.getEndDate() != null && hoy.isAfter(domain.getEndDate()))
-            throw new IllegalArgumentException("El descuento ya vencio");
+            throw new BusinessException("El descuento ya vencio");
 
         return customerDiscountMapper.toDto(domain);
     }
@@ -103,7 +106,7 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     @Override
     public CustomerDiscountAsyncResponseDTO updateCustomerDiscount(UUID id, CustomerDiscountDTO customerDiscount) {
         if (!customerDiscountRepository.existsById(id)) {
-            throw new IllegalArgumentException("CustomerDiscount no encontrado con id: " + id);
+            throw new ResourceNotFoundException("CustomerDiscount no encontrado con id: " + id);
         }
         CustomerDiscountDTO validated = validate(customerDiscount, id);
         validated.setId(id);
@@ -114,7 +117,7 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     @Override
     public CustomerDiscountAsyncResponseDTO deleteCustomerDiscount(UUID id) {
         if (!customerDiscountRepository.existsById(id)) {
-            throw new IllegalArgumentException("CustomerDiscount no encontrado con id: " + id);
+            throw new ResourceNotFoundException("CustomerDiscount no encontrado con id: " + id);
         }
         customerDiscountEventPublisher.publishCustomerDiscountDeleted(id);
         return new CustomerDiscountAsyncResponseDTO("La eliminacion del descuento de cliente fue recibida y sera procesada.", LocalDateTime.now());
@@ -122,19 +125,19 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
 
     private CustomerDiscountDTO validate(CustomerDiscountDTO customerDiscount, UUID excludeId) {
         if (customerDiscount.getLocationId() == null)
-            throw new IllegalArgumentException("locationId es obligatorio");
+            throw new ValidationException("locationId es obligatorio");
         if (customerDiscount.getCustomerId() == null)
-            throw new IllegalArgumentException("customerId es obligatorio");
+            throw new ValidationException("customerId es obligatorio");
         if (customerDiscount.getDiscountId() == null)
-            throw new IllegalArgumentException("discountId es obligatorio");
+            throw new ValidationException("discountId es obligatorio");
         if (customerDiscount.getAssignedAt() != null
                 && customerDiscount.getAssignedAt().isAfter(LocalDate.now()))
-            throw new IllegalArgumentException("assignedAt no puede ser una fecha futura");
+            throw new ValidationException("assignedAt no puede ser una fecha futura");
         if (customerDiscount.getAssignedAt() == null)
             customerDiscount.setAssignedAt(LocalDate.now());
         if (customerDiscount.getStartDate() != null && customerDiscount.getEndDate() != null
                 && customerDiscount.getEndDate().isBefore(customerDiscount.getStartDate()))
-            throw new IllegalArgumentException("endDate no puede ser anterior a startDate");
+            throw new ValidationException("endDate no puede ser anterior a startDate");
 
         boolean duplicado = excludeId != null
                 ? customerDiscountRepository
@@ -149,8 +152,7 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
                         customerDiscount.getEndDate());
 
         if (duplicado)
-            throw new IllegalArgumentException(
-                    "Ya existe un descuento asignado a este cliente en esta sede con las mismas fechas");
+            throw new BusinessException("Ya existe un descuento asignado a este cliente en esta sede con las mismas fechas");
 
         return customerDiscount;
     }
