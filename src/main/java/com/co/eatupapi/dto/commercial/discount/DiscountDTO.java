@@ -24,7 +24,6 @@ public class DiscountDTO {
     @Size(min = 5, max = 100, message = "description debe tener entre 5 y 100 caracteres")
     private String description;
 
-    @NotNull(message = "status es obligatorio")
     private Boolean status;
 
     public DiscountDTO() {}
