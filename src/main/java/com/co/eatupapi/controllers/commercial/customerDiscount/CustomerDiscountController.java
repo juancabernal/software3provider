@@ -1,6 +1,7 @@
 package com.co.eatupapi.controllers.commercial.customerDiscount;
 
 import com.co.eatupapi.dto.commercial.customerDiscount.CustomerDiscountDTO;
+import com.co.eatupapi.dto.commercial.customerDiscount.CustomerDiscountAsyncResponseDTO;
 import com.co.eatupapi.services.commercial.customerDiscount.CustomerDiscountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,22 +56,20 @@ public class CustomerDiscountController {
     }
 
     @PostMapping("/customer-discounts")
-    public ResponseEntity<CustomerDiscountDTO> createCustomerDiscount(
+    public ResponseEntity<CustomerDiscountAsyncResponseDTO> createCustomerDiscount(
             @RequestBody CustomerDiscountDTO customerDiscountDto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(customerDiscountService.createCustomerDiscount(customerDiscountDto));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(customerDiscountService.createCustomerDiscount(customerDiscountDto));
     }
 
     @PutMapping("/customer-discounts/{id}")
-    public ResponseEntity<CustomerDiscountDTO> updateCustomerDiscount(
+    public ResponseEntity<CustomerDiscountAsyncResponseDTO> updateCustomerDiscount(
             @PathVariable UUID id,
             @RequestBody CustomerDiscountDTO customerDiscountDto) {
-        return ResponseEntity.ok(customerDiscountService.updateCustomerDiscount(id, customerDiscountDto));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(customerDiscountService.updateCustomerDiscount(id, customerDiscountDto));
     }
 
     @DeleteMapping("/customer-discounts/{id}")
-    public ResponseEntity<Void> deleteCustomerDiscount(@PathVariable UUID id) {
-        customerDiscountService.deleteCustomerDiscount(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<CustomerDiscountAsyncResponseDTO> deleteCustomerDiscount(@PathVariable UUID id) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(customerDiscountService.deleteCustomerDiscount(id));
     }
 }

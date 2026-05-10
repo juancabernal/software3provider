@@ -8,6 +8,8 @@ import com.co.eatupapi.messaging.commercial.discount.DiscountEventPublisher;
 import com.co.eatupapi.repositories.commercial.discount.DiscountRepository;
 import com.co.eatupapi.utils.commercial.discount.mapper.DiscountMapper;
 import org.springframework.stereotype.Service;
+import com.co.eatupapi.dto.commercial.discount.DiscountAsyncResponseDTO;
+import java.time.LocalDateTime;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,25 +45,25 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Override
-    public DiscountDTO createDiscount(DiscountDTO discount) {
+    public DiscountAsyncResponseDTO createDiscount(DiscountDTO discount) {
         DiscountDTO validated = validate(discount, null);
         discountEventPublisher.publishDiscountCreated(validated);
-        return validated;
+        return new DiscountAsyncResponseDTO("El descuento fue recibido y sera procesado.", LocalDateTime.now());
     }
 
     @Override
-    public DiscountDTO updateDiscount(UUID id, DiscountDTO discount) {
+    public DiscountAsyncResponseDTO updateDiscount(UUID id, DiscountDTO discount) {
         if (!discountRepository.existsById(id)) {
             throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
         }
         DiscountDTO validated = validate(discount, id);
         validated.setId(id);
         discountEventPublisher.publishDiscountUpdated(validated);
-        return validated;
+        return new DiscountAsyncResponseDTO("La actualizacion del descuento fue recibida y sera procesada.", LocalDateTime.now());
     }
 
     @Override
-    public DiscountDTO updateDiscountStatus(UUID id, Boolean status) {
+    public DiscountAsyncResponseDTO updateDiscountStatus(UUID id, Boolean status) {
         if (status == null) {
             throw new IllegalArgumentException("status es obligatorio");
         }
@@ -72,15 +74,16 @@ public class DiscountServiceImpl implements DiscountService {
         dto.setId(id);
         dto.setStatus(status);
         discountEventPublisher.publishDiscountStatusUpdated(dto);
-        return dto;
+        return new DiscountAsyncResponseDTO("El cambio de estado del descuento fue recibido y sera procesado.", LocalDateTime.now());
     }
 
     @Override
-    public void deleteDiscount(UUID id) {
+    public DiscountAsyncResponseDTO deleteDiscount(UUID id) {
         if (!discountRepository.existsById(id)) {
             throw new IllegalArgumentException("Descuento no encontrado con id: " + id);
         }
         discountEventPublisher.publishDiscountDeleted(id);
+        return new DiscountAsyncResponseDTO("La eliminacion del descuento fue recibida y sera procesada.", LocalDateTime.now());
     }
 
     private DiscountDTO validate(DiscountDTO discount, UUID excludeId) {

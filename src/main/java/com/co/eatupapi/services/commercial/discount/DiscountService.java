@@ -3,6 +3,7 @@ package com.co.eatupapi.services.commercial.discount;
 
 
 import com.co.eatupapi.dto.commercial.discount.DiscountDTO;
+import com.co.eatupapi.dto.commercial.discount.DiscountAsyncResponseDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,12 +17,8 @@ public interface DiscountService {
 //cambiar cuando facturas quite el acoplamiento
     Optional<DiscountDTO> getDiscountById(UUID id);
 
-    DiscountDTO createDiscount(DiscountDTO discount);
-
-    DiscountDTO updateDiscount(UUID id, DiscountDTO discount);
-
-
-    DiscountDTO updateDiscountStatus(UUID id, Boolean status);
-
-    void deleteDiscount(UUID id);
+    DiscountAsyncResponseDTO createDiscount(DiscountDTO discount);
+    DiscountAsyncResponseDTO updateDiscount(UUID id, DiscountDTO discount);
+    DiscountAsyncResponseDTO updateDiscountStatus(UUID id, Boolean status);
+    DiscountAsyncResponseDTO deleteDiscount(UUID id);
 }

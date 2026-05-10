@@ -1,6 +1,7 @@
 package com.co.eatupapi.controllers.commercial.discount;
 
 import com.co.eatupapi.dto.commercial.discount.DiscountDTO;
+import com.co.eatupapi.dto.commercial.discount.DiscountAsyncResponseDTO;
 import com.co.eatupapi.services.commercial.discount.DiscountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,25 +38,24 @@ public class DiscountController {
     }//cambiar cuando facturas quite el acoplamiento
 
     @PostMapping
-    public ResponseEntity<DiscountDTO> createDiscount(@RequestBody DiscountDTO discountDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(discountService.createDiscount(discountDto));
+    public ResponseEntity<DiscountAsyncResponseDTO> createDiscount(@RequestBody DiscountDTO discountDto) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(discountService.createDiscount(discountDto));
     }
 
     @PutMapping("/{discountId}")
-    public ResponseEntity<DiscountDTO> updateDiscount(@PathVariable UUID discountId,
-                                                      @RequestBody DiscountDTO discountDto) {
-        return ResponseEntity.ok(discountService.updateDiscount(discountId, discountDto));
+    public ResponseEntity<DiscountAsyncResponseDTO> updateDiscount(@PathVariable UUID discountId,
+                                                                   @RequestBody DiscountDTO discountDto) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(discountService.updateDiscount(discountId, discountDto));
     }
 
     @PatchMapping("/{discountId}/status")
-    public ResponseEntity<DiscountDTO> updateDiscountStatus(@PathVariable UUID discountId,
-                                                            @RequestBody Map<String, Boolean> request) {
-        return ResponseEntity.ok(discountService.updateDiscountStatus(discountId, request.get("status")));
+    public ResponseEntity<DiscountAsyncResponseDTO> updateDiscountStatus(@PathVariable UUID discountId,
+                                                                         @RequestBody Map<String, Boolean> request) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(discountService.updateDiscountStatus(discountId, request.get("status")));
     }
 
     @DeleteMapping("/{discountId}")
-    public ResponseEntity<Void> deleteDiscount(@PathVariable UUID discountId) {
-        discountService.deleteDiscount(discountId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DiscountAsyncResponseDTO> deleteDiscount(@PathVariable UUID discountId) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(discountService.deleteDiscount(discountId));
     }
 }

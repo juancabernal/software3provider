@@ -2,6 +2,8 @@ package com.co.eatupapi.services.commercial.customerDiscount;
 
 import com.co.eatupapi.domain.commercial.customerDiscount.CustomerDiscountDomain;
 import com.co.eatupapi.dto.commercial.customerDiscount.CustomerDiscountDTO;
+import com.co.eatupapi.dto.commercial.customerDiscount.CustomerDiscountAsyncResponseDTO;
+import java.time.LocalDateTime;
 import com.co.eatupapi.messaging.commercial.customerDiscount.CustomerDiscountEventPublisher;
 import com.co.eatupapi.repositories.commercial.customerDiscount.CustomerDiscountRepository;
 import com.co.eatupapi.utils.commercial.customerDiscount.mapper.CustomerDiscountMapper;
@@ -92,29 +94,30 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     }
 
     @Override
-    public CustomerDiscountDTO createCustomerDiscount(CustomerDiscountDTO customerDiscount) {
+    public CustomerDiscountAsyncResponseDTO createCustomerDiscount(CustomerDiscountDTO customerDiscount) {
         CustomerDiscountDTO validated = validate(customerDiscount, null);
         customerDiscountEventPublisher.publishCustomerDiscountCreated(validated);
-        return validated;
+        return new CustomerDiscountAsyncResponseDTO("El descuento de cliente fue recibido y sera procesado.", LocalDateTime.now());
     }
 
     @Override
-    public CustomerDiscountDTO updateCustomerDiscount(UUID id, CustomerDiscountDTO customerDiscount) {
+    public CustomerDiscountAsyncResponseDTO updateCustomerDiscount(UUID id, CustomerDiscountDTO customerDiscount) {
         if (!customerDiscountRepository.existsById(id)) {
             throw new IllegalArgumentException("CustomerDiscount no encontrado con id: " + id);
         }
         CustomerDiscountDTO validated = validate(customerDiscount, id);
         validated.setId(id);
         customerDiscountEventPublisher.publishCustomerDiscountUpdated(validated);
-        return validated;
+        return new CustomerDiscountAsyncResponseDTO("La actualizacion del descuento de cliente fue recibida y sera procesada.", LocalDateTime.now());
     }
 
     @Override
-    public void deleteCustomerDiscount(UUID id) {
+    public CustomerDiscountAsyncResponseDTO deleteCustomerDiscount(UUID id) {
         if (!customerDiscountRepository.existsById(id)) {
             throw new IllegalArgumentException("CustomerDiscount no encontrado con id: " + id);
         }
         customerDiscountEventPublisher.publishCustomerDiscountDeleted(id);
+        return new CustomerDiscountAsyncResponseDTO("La eliminacion del descuento de cliente fue recibida y sera procesada.", LocalDateTime.now());
     }
 
     private CustomerDiscountDTO validate(CustomerDiscountDTO customerDiscount, UUID excludeId) {
