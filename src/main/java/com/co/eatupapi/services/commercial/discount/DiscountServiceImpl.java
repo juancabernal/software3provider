@@ -72,9 +72,6 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     public DiscountAsyncResponseDTO updateDiscountStatus(UUID id, Boolean status) {
-        if (status == null) {
-            throw new ValidationException("status es obligatorio");
-        }
         if (!discountRepository.existsById(id)) {
             throw new ResourceNotFoundException("Descuento no encontrado con id: " + id);
         }

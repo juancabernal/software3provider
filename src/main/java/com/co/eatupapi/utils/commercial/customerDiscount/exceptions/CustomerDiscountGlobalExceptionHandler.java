@@ -3,9 +3,11 @@ package com.co.eatupapi.utils.commercial.customerDiscount.exceptions;
 import com.co.eatupapi.controllers.commercial.customerDiscount.CustomerDiscountController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 
@@ -33,6 +35,18 @@ public class CustomerDiscountGlobalExceptionHandler {
                 ? "Error de validación"
                 : ex.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
         return build(message, CustomerDiscountErrorCode.VALIDATION_ERROR.name(), LocalDateTime.now(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<CustomerDiscountApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String message = "El id '" + ex.getValue() + "' no es un UUID válido.";
+        return build(message, CustomerDiscountErrorCode.VALIDATION_ERROR.name(), LocalDateTime.now(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CustomerDiscountApiErrorResponse> handleNotReadable(HttpMessageNotReadableException ex) {
+        return build("El cuerpo de la solicitud es inválido o está mal formado.",
+                CustomerDiscountErrorCode.VALIDATION_ERROR.name(), LocalDateTime.now(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

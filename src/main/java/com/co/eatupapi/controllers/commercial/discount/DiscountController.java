@@ -2,7 +2,9 @@ package com.co.eatupapi.controllers.commercial.discount;
 
 import com.co.eatupapi.dto.commercial.discount.DiscountDTO;
 import com.co.eatupapi.dto.commercial.discount.DiscountAsyncResponseDTO;
+import com.co.eatupapi.dto.commercial.discount.UpdateDiscountStatusRequest;
 import com.co.eatupapi.services.commercial.discount.DiscountService;
+import com.co.eatupapi.utils.commercial.discount.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +37,7 @@ public class DiscountController {
     @GetMapping("/{discountId}")
     public ResponseEntity<DiscountDTO> getDiscountById(@PathVariable UUID discountId) {
         return ResponseEntity.ok(discountService.getDiscountById(discountId)
-                .orElseThrow(() -> new IllegalArgumentException("Descuento no encontrado con id: " + discountId)));
+                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado con id: " + discountId)));
     }//cambiar cuando facturas quite el acoplamiento
 
     @PostMapping
@@ -50,9 +52,11 @@ public class DiscountController {
     }
 
     @PatchMapping("/{discountId}/status")
-    public ResponseEntity<DiscountAsyncResponseDTO> updateDiscountStatus(@PathVariable UUID discountId,
-                                                                         @RequestBody Map<String, Boolean> request) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(discountService.updateDiscountStatus(discountId, request.get("status")));
+    public ResponseEntity<DiscountAsyncResponseDTO> updateDiscountStatus(
+            @PathVariable UUID discountId,
+            @Valid @RequestBody UpdateDiscountStatusRequest request) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(discountService.updateDiscountStatus(discountId, request.getStatus()));
     }
 
     @DeleteMapping("/{discountId}")

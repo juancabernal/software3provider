@@ -3,9 +3,11 @@ package com.co.eatupapi.utils.commercial.discount.exceptions;
 import com.co.eatupapi.controllers.commercial.discount.DiscountController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 
@@ -30,9 +32,21 @@ public class DiscountGlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<DiscountApiErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().isEmpty()
-                ? "Error de validacion"
+                ? "Error de validación"
                 : ex.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
         return build(message, DiscountErrorCode.VALIDATION_ERROR.name(), LocalDateTime.now(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<DiscountApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String message = "El id '" + ex.getValue() + "' no es un UUID válido.";
+        return build(message, DiscountErrorCode.VALIDATION_ERROR.name(), LocalDateTime.now(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<DiscountApiErrorResponse> handleNotReadable(HttpMessageNotReadableException ex) {
+        return build("El cuerpo de la solicitud es inválido o está mal formado.",
+                DiscountErrorCode.VALIDATION_ERROR.name(), LocalDateTime.now(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
