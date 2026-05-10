@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/comercial/api/v1/discounts")
@@ -38,13 +39,13 @@ public class DiscountController {
     }//cambiar cuando facturas quite el acoplamiento
 
     @PostMapping
-    public ResponseEntity<DiscountAsyncResponseDTO> createDiscount(@RequestBody DiscountDTO discountDto) {
+    public ResponseEntity<DiscountAsyncResponseDTO> createDiscount(@Valid @RequestBody DiscountDTO discountDto) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(discountService.createDiscount(discountDto));
     }
 
     @PutMapping("/{discountId}")
     public ResponseEntity<DiscountAsyncResponseDTO> updateDiscount(@PathVariable UUID discountId,
-                                                                   @RequestBody DiscountDTO discountDto) {
+                                                                   @Valid @RequestBody DiscountDTO discountDto) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(discountService.updateDiscount(discountId, discountDto));
     }
 

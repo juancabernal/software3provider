@@ -13,6 +13,7 @@ import com.co.eatupapi.utils.commercial.discount.mapper.DiscountMapper;
 import org.springframework.stereotype.Service;
 import com.co.eatupapi.dto.commercial.discount.DiscountAsyncResponseDTO;
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,14 +35,18 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DiscountDTO> getAllDiscounts() {
         return discountRepository.findAll().stream().map(discountMapper::toDto).toList();
     }
     @Override
+    @Transactional(readOnly = true)
     public List<DiscountDTO> getActiveDiscounts() {
         return discountRepository.findByStatus(Boolean.TRUE).stream().map(discountMapper::toDto).toList();
     }
 //cambiar cuando facturas quite el acoplamiento y poner discount con id no encontrados
+    @Override
+    @Transactional(readOnly = true)
     public Optional<DiscountDTO> getDiscountById(UUID id) {
         return discountRepository.findById(id)
                 .map(discountMapper::toDto);

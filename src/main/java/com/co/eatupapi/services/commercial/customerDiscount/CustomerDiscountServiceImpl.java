@@ -13,6 +13,7 @@ import com.co.eatupapi.utils.commercial.customerDiscount.exceptions.BusinessExce
 import com.co.eatupapi.utils.commercial.customerDiscount.exceptions.ResourceNotFoundException;
 import com.co.eatupapi.utils.commercial.customerDiscount.exceptions.ValidationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -39,12 +40,14 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CustomerDiscountDTO> getAllCustomerDiscounts() {
         return customerDiscountRepository.findAll().stream()
                 .map(customerDiscountMapper::toDto).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CustomerDiscountDTO getCustomerDiscountById(UUID customerDiscountId) {
         return customerDiscountRepository.findById(customerDiscountId)
                 .map(customerDiscountMapper::toDto)
@@ -53,24 +56,28 @@ public class CustomerDiscountServiceImpl implements CustomerDiscountService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CustomerDiscountDTO> getDiscountsByCustomerId(UUID customerId) {
         return customerDiscountRepository.findByCustomerId(customerId)
                 .stream().map(customerDiscountMapper::toDto).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CustomerDiscountDTO> getCustomersByDiscountId(UUID discountId) {
         return customerDiscountRepository.findByDiscountId(discountId)
                 .stream().map(customerDiscountMapper::toDto).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CustomerDiscountDTO> getDiscountsByCustomerAndLocation(UUID customerId, UUID locationId) {
         return customerDiscountRepository.findByCustomerIdAndLocationId(customerId, locationId)
                 .stream().map(customerDiscountMapper::toDto).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CustomerDiscountDTO getApplicableCustomerDiscount(UUID customerDiscountId,
                                                              UUID customerId, UUID locationId) {
         CustomerDiscountDomain domain = customerDiscountRepository.findById(customerDiscountId)
