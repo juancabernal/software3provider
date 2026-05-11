@@ -2,16 +2,17 @@ package com.co.eatupapi.services.inventory.location.impl;
 
 import com.co.eatupapi.domain.inventory.location.LocationDomain;
 import com.co.eatupapi.dto.inventory.location.LocationPatchDTO;
+import com.co.eatupapi.dto.inventory.location.LocationPatchRequestedMessage;
 import com.co.eatupapi.dto.inventory.location.LocationRequestDTO;
 import com.co.eatupapi.dto.inventory.location.LocationResponseDTO;
+import com.co.eatupapi.dto.inventory.location.LocationUpdateRequestedMessage;
+import com.co.eatupapi.messaging.inventory.location.LocationEventPublisher;
 import com.co.eatupapi.repositories.inventory.location.LocationRepository;
 import com.co.eatupapi.services.inventory.location.LocationService;
 import com.co.eatupapi.utils.inventory.location.exceptions.LocationResourceNotFoundException;
 import com.co.eatupapi.utils.inventory.location.exceptions.LocationValidationException;
-import com.co.eatupapi.utils.inventory.location.mapper.LocationMapperDomain;
 import com.co.eatupapi.utils.inventory.location.validation.LocationValidator;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,9 +21,12 @@ import java.util.UUID;
 public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
+    private final LocationEventPublisher locationEventPublisher;
 
-    public LocationServiceImpl(LocationRepository locationRepository) {
+    public LocationServiceImpl(LocationRepository locationRepository,
+                               LocationEventPublisher locationEventPublisher) {
         this.locationRepository = locationRepository;
+        this.locationEventPublisher = locationEventPublisher;
     }
 
     @Override
@@ -50,64 +54,24 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    @Transactional
-    public LocationResponseDTO create(LocationRequestDTO request) {
-        LocationDomain domain = LocationMapperDomain.toDomain(request);
-        LocationDomain saved = locationRepository.save(domain);
-        return LocationResponseDTO.fromDomain(saved);
+    public void create(LocationRequestDTO request) {
+        locationEventPublisher.publishCreateRequested(request);
     }
 
     @Override
-    @Transactional
-    public LocationResponseDTO update(UUID id, LocationRequestDTO request) {
+    public void update(UUID id, LocationRequestDTO request) {
         UUID validatedId = LocationValidator.validateId(id);
-
-        locationRepository.findById(validatedId)
-                .orElseThrow(() -> new LocationResourceNotFoundException("Sede no encontrada con el id: " + validatedId));
-
-        LocationDomain updated = LocationMapperDomain.toDomain(validatedId, request);
-        LocationDomain saved = locationRepository.save(updated);
-        return LocationResponseDTO.fromDomain(saved);
+        locationEventPublisher.publishUpdateRequested(new LocationUpdateRequestedMessage(validatedId, request));
     }
 
     @Override
-    @Transactional
-    public LocationResponseDTO patchPartial(UUID id, LocationPatchDTO patch) {
+    public void patchPartial(UUID id, LocationPatchDTO patch) {
         UUID validatedId = LocationValidator.validateId(id);
         if (patch == null || isPatchEmpty(patch)) {
             throw new LocationValidationException("Debe enviar al menos un campo para actualizar");
         }
 
-        LocationDomain domain = locationRepository.findById(validatedId)
-                .orElseThrow(() -> new LocationResourceNotFoundException("Sede no encontrada con id: " + validatedId));
-
-        if (patch.getName() != null) {
-            domain.setName(patch.getName());
-        }
-        if (patch.getCity() != null) {
-            domain.setCity(patch.getCity());
-        }
-        if (patch.getAddress() != null) {
-            domain.setAddress(patch.getAddress());
-        }
-        if (patch.getActive() != null) {
-            domain.setActive(patch.getActive());
-        }
-        if (patch.getEmail() != null) {
-            domain.setEmail(patch.getEmail());
-        }
-        if (patch.getPhoneNumber() != null) {
-            domain.setPhoneNumber(patch.getPhoneNumber());
-        }
-        if (patch.getStartTime() != null) {
-            domain.setStartTime(patch.getStartTime());
-        }
-        if (patch.getEndTime() != null) {
-            domain.setEndTime(patch.getEndTime());
-        }
-
-        LocationDomain saved = locationRepository.save(domain);
-        return LocationResponseDTO.fromDomain(saved);
+        locationEventPublisher.publishPatchRequested(new LocationPatchRequestedMessage(validatedId, patch));
     }
 
     private static boolean isPatchEmpty(LocationPatchDTO patch) {

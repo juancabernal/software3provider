@@ -14,9 +14,9 @@ public interface LocationService {
 
     LocationResponseDTO findById(UUID id);
 
-    LocationResponseDTO create(LocationRequestDTO request);
+    void create(LocationRequestDTO request);
 
-    LocationResponseDTO update(UUID id, LocationRequestDTO request);
+    void update(UUID id, LocationRequestDTO request);
 
-    LocationResponseDTO patchPartial(UUID id, LocationPatchDTO patch);
+    void patchPartial(UUID id, LocationPatchDTO patch);
 }

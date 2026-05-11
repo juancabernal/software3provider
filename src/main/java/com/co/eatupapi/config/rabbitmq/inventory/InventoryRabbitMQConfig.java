@@ -46,6 +46,29 @@ public class InventoryRabbitMQConfig {
     @Value("${rabbitmq.routing-key.product.delete}")
     private String deleteRoutingKey;
 
+
+
+    @Value("${rabbitmq.exchange.location}")
+    private String locationExchange;
+
+    @Value("${rabbitmq.queue.location.create}")
+    private String locationCreateQueue;
+
+    @Value("${rabbitmq.queue.location.update}")
+    private String locationUpdateQueue;
+
+    @Value("${rabbitmq.queue.location.patch}")
+    private String locationPatchQueue;
+
+    @Value("${rabbitmq.routing-key.location.create}")
+    private String locationCreateRoutingKey;
+
+    @Value("${rabbitmq.routing-key.location.update}")
+    private String locationUpdateRoutingKey;
+
+    @Value("${rabbitmq.routing-key.location.patch}")
+    private String locationPatchRoutingKey;
+
     @Bean
     public RabbitAdmin rabbitAdminInventory(ConnectionFactory connectionFactory) {
         RabbitAdmin admin = new RabbitAdmin(connectionFactory);
@@ -131,5 +154,46 @@ public class InventoryRabbitMQConfig {
         return BindingBuilder.bind(productDeleteQueue)
                 .to(productExchange)
                 .with(deleteRoutingKey);
+    }
+
+    @Bean
+    public DirectExchange locationExchange() {
+        return new DirectExchange(locationExchange);
+    }
+
+    @Bean
+    public Queue locationCreateQueue() {
+        return QueueBuilder.durable(locationCreateQueue).build();
+    }
+
+    @Bean
+    public Queue locationUpdateQueue() {
+        return QueueBuilder.durable(locationUpdateQueue).build();
+    }
+
+    @Bean
+    public Queue locationPatchQueue() {
+        return QueueBuilder.durable(locationPatchQueue).build();
+    }
+
+    @Bean
+    public Binding locationCreateBinding(Queue locationCreateQueue, DirectExchange locationExchange) {
+        return BindingBuilder.bind(locationCreateQueue)
+                .to(locationExchange)
+                .with(locationCreateRoutingKey);
+    }
+
+    @Bean
+    public Binding locationUpdateBinding(Queue locationUpdateQueue, DirectExchange locationExchange) {
+        return BindingBuilder.bind(locationUpdateQueue)
+                .to(locationExchange)
+                .with(locationUpdateRoutingKey);
+    }
+
+    @Bean
+    public Binding locationPatchBinding(Queue locationPatchQueue, DirectExchange locationExchange) {
+        return BindingBuilder.bind(locationPatchQueue)
+                .to(locationExchange)
+                .with(locationPatchRoutingKey);
     }
 }
