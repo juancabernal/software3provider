@@ -1,4 +1,4 @@
-package com.co.eatupapi.mensajeria.user;
+package com.co.eatupapi.messaging.user;
 
 public enum UserCommandAction {
 	CREATE,

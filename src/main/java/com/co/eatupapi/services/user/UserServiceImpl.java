@@ -6,7 +6,7 @@ import com.co.eatupapi.dto.user.CreateUserRequest;
 import com.co.eatupapi.dto.user.UpdateUserRequest;
 import com.co.eatupapi.dto.user.UserResponse;
 import com.co.eatupapi.dto.user.UserSummaryResponse;
-import com.co.eatupapi.mensajeria.user.UserCommandPublisher;
+import com.co.eatupapi.messaging.user.UserCommandPublisher;
 import com.co.eatupapi.repositories.user.UserRepository;
 import com.co.eatupapi.utils.user.exceptions.UserBusinessException;
 import com.co.eatupapi.utils.user.exceptions.UserNotFoundException;
