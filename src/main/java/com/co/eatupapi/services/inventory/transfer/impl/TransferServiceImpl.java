@@ -183,7 +183,7 @@ public class TransferServiceImpl implements TransferService {
         return transferMapper.toResponse(transferRepository.save(transfer));
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(initialDelay = 60000, fixedDelay = 60000)
     @Transactional
     public void moveTransfersToTransitWhenDepartureTimeArrives() {
         int updatedTransfers = transferRepository.moveToTransitWhenDepartureTimeArrives(
