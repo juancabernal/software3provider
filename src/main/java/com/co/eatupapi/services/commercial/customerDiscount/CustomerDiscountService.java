@@ -2,9 +2,9 @@ package com.co.eatupapi.services.commercial.customerDiscount;
 
 
 import com.co.eatupapi.dto.commercial.customerDiscount.CustomerDiscountDTO;
+import com.co.eatupapi.dto.commercial.customerDiscount.CustomerDiscountAsyncResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface CustomerDiscountService {
@@ -17,7 +17,7 @@ public interface CustomerDiscountService {
 
     List<CustomerDiscountDTO> getDiscountsByCustomerAndLocation(UUID customerId, UUID locationId);
 
-    CustomerDiscountDTO createCustomerDiscount(CustomerDiscountDTO customerDiscount);
+    CustomerDiscountAsyncResponseDTO createCustomerDiscount(CustomerDiscountDTO customerDiscount);
 
     CustomerDiscountDTO getApplicableCustomerDiscount(
             UUID customerDiscountId,
@@ -27,7 +27,6 @@ public interface CustomerDiscountService {
 
     List<CustomerDiscountDTO> getCustomersByDiscountId(UUID discountId);
 
-    CustomerDiscountDTO updateCustomerDiscount(UUID id, CustomerDiscountDTO customerDiscount);
-
-    void deleteCustomerDiscount(UUID id);
+    CustomerDiscountAsyncResponseDTO updateCustomerDiscount(UUID id, CustomerDiscountDTO customerDiscount);
+    CustomerDiscountAsyncResponseDTO deleteCustomerDiscount(UUID id);
 }
