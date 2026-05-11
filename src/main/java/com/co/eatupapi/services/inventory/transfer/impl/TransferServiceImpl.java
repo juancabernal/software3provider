@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
@@ -177,6 +178,16 @@ public class TransferServiceImpl implements TransferService {
         transfer.setObservaciones(observations.trim());
         transfer.setEstado(TransferStatus.RECLAMADO);
         return transferMapper.toResponse(transferRepository.save(transfer));
+    }
+
+    @Scheduled(fixedDelay = 60000)
+    @Transactional
+    public void moveTransfersToTransitWhenDepartureTimeArrives() {
+        transferRepository.moveToTransitWhenDepartureTimeArrives(
+                TransferStatus.EN_PROCESO,
+                TransferStatus.EN_TRANSITO,
+                LocalDateTime.now()
+        );
     }
 
     private void validateId(Long id) {
