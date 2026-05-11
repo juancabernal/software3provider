@@ -16,9 +16,18 @@ vars:pre-request {
 }
 
 script:pre-request {
-  const token = bru.getEnvVar("token") || bru.getVar("token");
-  const transferId = bru.getVar("transferId");
-  const sedeDestinoId = bru.getVar("sedeDestinoId");
+  const token =
+    (bru.getEnvVar("token") || bru.getVar("token") || "").trim();
+  const transferId =
+    (bru.getVar("transferId") || bru.getEnvVar("transferId") || "").trim();
+  const sedeDestinoId =
+    (
+      bru.getVar("sedeDestinoId") ||
+      bru.getEnvVar("sedeDestinoId") ||
+      bru.getVar("transferDestinationLocationId") ||
+      bru.getEnvVar("transferDestinationLocationId") ||
+      ""
+    ).trim();
   
   if (!token) {
     throw new Error("Missing variable 'token'. Run the login request first.");
@@ -35,6 +44,9 @@ script:pre-request {
   if (!sedeDestinoId || sedeDestinoId === "REPLACE_WITH_DESTINATION_LOCATION_ID") {
     throw new Error("Missing variable 'sedeDestinoId'. Set the destination location id before running this request.");
   }
+
+  bru.setVar("transferId", String(transferId));
+  bru.setVar("sedeDestinoId", sedeDestinoId);
 }
 
 script:post-response {

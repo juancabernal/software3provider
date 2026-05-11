@@ -14,8 +14,10 @@ vars:pre-request {
 }
 
 script:pre-request {
-  const token = bru.getEnvVar("token") || bru.getVar("token");
-  const transferId = bru.getVar("transferId");
+  const token =
+    (bru.getEnvVar("token") || bru.getVar("token") || "").trim();
+  const transferId =
+    (bru.getVar("transferId") || bru.getEnvVar("transferId") || "").trim();
 
   if (!token) {
     throw new Error("Missing variable 'token'. Run the login request first.");
@@ -28,6 +30,8 @@ script:pre-request {
   if (!/^\d+$/.test(String(transferId))) {
     throw new Error("Invalid variable 'transferId'. It must be a numeric transfer id.");
   }
+
+  bru.setVar("transferId", String(transferId));
 }
 
 script:post-response {

@@ -14,46 +14,66 @@ headers {
   Content-Type: application/json
 }
 
+body:json {
+  {
+    "observaciones": "{{transferClaimObservaciones}}"
+  }
+}
+
 vars:pre-request {
   baseUrl: http://localhost:8080
   sedeDestinoId: REPLACE_WITH_DESTINATION_LOCATION_ID
+  transferClaimObservaciones: La sede destino reporta novedades en la recepcion
 }
 
 script:pre-request {
-  const token = bru.getEnvVar("token") || bru.getVar("token");
-  const transferId = bru.getVar("transferId");
-  const sedeDestinoId = bru.getVar("sedeDestinoId");
-
+  const token =
+    (bru.getEnvVar("token") || bru.getVar("token") || "").trim();
+  const transferId =
+    (bru.getVar("transferId") || bru.getEnvVar("transferId") || "").trim();
+  const sedeDestinoId =
+    (
+      bru.getVar("sedeDestinoId") ||
+      bru.getEnvVar("sedeDestinoId") ||
+      bru.getVar("transferDestinationLocationId") ||
+      bru.getEnvVar("transferDestinationLocationId") ||
+      ""
+    ).trim();
+  const transferClaimObservaciones =
+    (bru.getVar("transferClaimObservaciones") || bru.getEnvVar("transferClaimObservaciones") || "").trim();
+  
   if (!token) {
     throw new Error("Missing variable 'token'. Run the login request first.");
   }
-
+  
   if (!transferId) {
     throw new Error("Missing variable 'transferId'. Run 'create transfer' first.");
   }
-
+  
   if (!/^\d+$/.test(String(transferId))) {
     throw new Error("Invalid variable 'transferId'. It must be a numeric transfer id.");
   }
-
+  
   if (!sedeDestinoId || sedeDestinoId === "REPLACE_WITH_DESTINATION_LOCATION_ID") {
     throw new Error("Missing variable 'sedeDestinoId'. Set the destination location id before running this request.");
   }
-}
-
-body:json {
-  {
-    "observaciones": "La sede destino reporta novedades en la recepción"
+  
+  if (!transferClaimObservaciones) {
+    throw new Error("Missing variable 'transferClaimObservaciones'. Set the claim observations before running this request.");
   }
+
+  bru.setVar("transferId", String(transferId));
+  bru.setVar("sedeDestinoId", sedeDestinoId);
+  bru.setVar("transferClaimObservaciones", transferClaimObservaciones);
 }
 
 script:post-response {
   const data = res.getBody();
-
+  
   test("Status code is 200", function() {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("Transfer is RECLAMADO", function() {
     expect(data.estado).to.equal("RECLAMADO");
   });
