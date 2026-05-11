@@ -22,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Service
 public class TransferServiceImpl implements TransferService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransferServiceImpl.class);
     private static final String ORIGIN_ROLE = "origen";
     private static final String DESTINATION_ROLE = "destino";
     private static final String DESTINATION_REQUIRED_MESSAGE = "La sede destino es obligatoria";
@@ -183,11 +186,15 @@ public class TransferServiceImpl implements TransferService {
     @Scheduled(fixedDelay = 60000)
     @Transactional
     public void moveTransfersToTransitWhenDepartureTimeArrives() {
-        transferRepository.moveToTransitWhenDepartureTimeArrives(
+        int updatedTransfers = transferRepository.moveToTransitWhenDepartureTimeArrives(
                 TransferStatus.EN_PROCESO,
                 TransferStatus.EN_TRANSITO,
                 LocalDateTime.now()
         );
+
+        if (updatedTransfers > 0) {
+            LOGGER.info("Se actualizaron {} traslados a EN_TRANSITO por llegada de fechaEnvio", updatedTransfers);
+        }
     }
 
     private void validateId(Long id) {
