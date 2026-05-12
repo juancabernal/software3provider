@@ -22,6 +22,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
@@ -30,6 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Service
 public class TransferServiceImpl implements TransferService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransferServiceImpl.class);
     private static final String ORIGIN_ROLE = "origen";
     private static final String DESTINATION_ROLE = "destino";
     private static final String DESTINATION_REQUIRED_MESSAGE = "La sede destino es obligatoria";
@@ -60,7 +64,8 @@ public class TransferServiceImpl implements TransferService {
     @Transactional
     public TransferResponseDTO create(TransferRequestDTO request) {
         TransferProducts products = validateAndLoadRequest(request);
-        validateAuthenticatedUserCanCreateTransfer(request.sedeOrigen());
+        validateAuthenticatedUserBelongsToLocation(request.sedeOrigen(), ORIGIN_ROLE,
+                "Solo puedes crear traslados desde tu propia sede");
         Transfer transfer = transferMapper.toDomain(request);
         transfer.setEstado(TransferStatus.EN_PROCESO);
         transfer.setStock(products.originProduct().getStock());
@@ -82,6 +87,10 @@ public class TransferServiceImpl implements TransferService {
         if (statusUpdate.estado() == TransferStatus.CANCELADO) {
             validateCancellationAllowed(transfer, sedeOrigen);
         }
+        if (statusUpdate.estado() == TransferStatus.EN_TRANSITO) {
+            validateTransitAllowed(transfer, sedeOrigen);
+        }
+        validateManualStatusUpdate(statusUpdate.estado());
         validateStatusTransition(transfer.getEstado(), statusUpdate.estado());
         if (statusUpdate.estado() == TransferStatus.COMPLETADO) {
             applyInventoryMovement(transfer);
@@ -148,6 +157,8 @@ public class TransferServiceImpl implements TransferService {
     @Transactional
     public TransferResponseDTO confirmReceipt(Long id, String sedeDestino) {
         Transfer transfer = getDestinationTransfer(id, sedeDestino);
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeDestino(), DESTINATION_ROLE,
+                "Solo la sede destino autenticada puede confirmar el traslado");
         validateReceivableStatus(transfer);
         applyInventoryMovement(transfer);
         transfer.setEstado(TransferStatus.COMPLETADO);
@@ -158,6 +169,8 @@ public class TransferServiceImpl implements TransferService {
     @Transactional
     public TransferResponseDTO claimReceipt(Long id, String sedeDestino, TransferObservacionUpdateDTO observacionUpdate) {
         Transfer transfer = getDestinationTransfer(id, sedeDestino);
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeDestino(), DESTINATION_ROLE,
+                "Solo la sede destino autenticada puede reclamar el traslado");
         validateReceivableStatus(transfer);
 
         String observations = observacionUpdate == null ? null : observacionUpdate.observaciones();
@@ -168,6 +181,20 @@ public class TransferServiceImpl implements TransferService {
         transfer.setObservaciones(observations.trim());
         transfer.setEstado(TransferStatus.RECLAMADO);
         return transferMapper.toResponse(transferRepository.save(transfer));
+    }
+
+    @Scheduled(initialDelay = 60000, fixedDelay = 60000)
+    @Transactional
+    public void moveTransfersToTransitWhenDepartureTimeArrives() {
+        int updatedTransfers = transferRepository.moveToTransitWhenDepartureTimeArrives(
+                TransferStatus.EN_PROCESO,
+                TransferStatus.EN_TRANSITO,
+                LocalDateTime.now()
+        );
+
+        if (updatedTransfers > 0) {
+            LOGGER.info("Se actualizaron {} traslados a EN_TRANSITO por llegada de fechaEnvio", updatedTransfers);
+        }
     }
 
     private void validateId(Long id) {
@@ -326,12 +353,33 @@ public class TransferServiceImpl implements TransferService {
 
     private void validateCancellationAllowed(Transfer transfer, String sedeOrigen) {
         validateRequiredLocationId(sedeOrigen, "La sede origen es obligatoria para cancelar", ORIGIN_ROLE);
-        validateLocationExistsAndActive(sedeOrigen, ORIGIN_ROLE);
         if (!sedeOrigen.trim().equals(transfer.getSedeOrigen())) {
             throw new TransferBusinessException("Solo la sede origen puede cancelar el traslado");
         }
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeOrigen(), ORIGIN_ROLE,
+                "Solo la sede origen autenticada puede cancelar el traslado");
         if (transfer.getEstado() != TransferStatus.EN_PROCESO) {
-            throw new TransferBusinessException("Solo se puede cancelar un traslado antes de que entre en tránsito");
+            throw new TransferBusinessException("La sede origen solo puede cancelar traslados en estado EN_PROCESO");
+        }
+    }
+
+    private void validateTransitAllowed(Transfer transfer, String sedeOrigen) {
+        validateRequiredLocationId(sedeOrigen, "La sede origen es obligatoria para enviar el traslado", ORIGIN_ROLE);
+        if (!sedeOrigen.trim().equals(transfer.getSedeOrigen())) {
+            throw new TransferBusinessException("Solo la sede origen puede marcar el traslado en tránsito");
+        }
+        validateAuthenticatedUserBelongsToLocation(transfer.getSedeOrigen(), ORIGIN_ROLE,
+                "Solo la sede origen autenticada puede marcar el traslado en tránsito");
+        if (transfer.getEstado() != TransferStatus.EN_PROCESO) {
+            throw new TransferBusinessException("Solo se pueden enviar a tránsito traslados en estado EN_PROCESO");
+        }
+    }
+
+    private void validateManualStatusUpdate(TransferStatus nextStatus) {
+        if (nextStatus == TransferStatus.COMPLETADO || nextStatus == TransferStatus.RECLAMADO) {
+            throw new TransferBusinessException(
+                    "La sede destino debe gestionar esta acción usando los endpoints de confirmación o reclamo"
+            );
         }
     }
 
@@ -342,7 +390,10 @@ public class TransferServiceImpl implements TransferService {
         validateLocationExistsAndActive(locationId, role);
     }
 
-    private void validateAuthenticatedUserCanCreateTransfer(String sedeOrigen) {
+    private void validateAuthenticatedUserBelongsToLocation(String locationId,
+                                                            String role,
+                                                            String mismatchMessage) {
+        validateRequiredLocationId(locationId, "La sede de " + role + " es obligatoria", role);
         String authenticatedEmail = getAuthenticatedUserEmail();
         UserDomain authenticatedUser = userRepository.findByEmailIgnoreCase(authenticatedEmail)
                 .orElseThrow(() -> new TransferBusinessException("No se encontró el usuario autenticado"));
@@ -351,8 +402,8 @@ public class TransferServiceImpl implements TransferService {
             throw new TransferBusinessException("El usuario autenticado no tiene una sede asociada");
         }
 
-        if (!authenticatedUser.getLocationId().toString().equals(sedeOrigen.trim())) {
-            throw new TransferBusinessException("Solo puedes crear traslados desde tu propia sede");
+        if (!authenticatedUser.getLocationId().toString().equals(locationId.trim())) {
+            throw new TransferBusinessException(mismatchMessage);
         }
     }
 

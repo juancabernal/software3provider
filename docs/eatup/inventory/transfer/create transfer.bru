@@ -18,41 +18,76 @@ body:json {
   {
     "sedeOrigen": "{{transferOriginLocationId}}",
     "sedeDestino": "{{transferDestinationLocationId}}",
-    "fechaEnvio": "2026-04-22T10:30:00",
-    "fechaLlegada": "2026-04-30T10:30:00",
-    "responsable": "Simon Arias",
-    "producto": "Tomate Fresco",
-    "cantidad": 2,
-    "observaciones": "Transferencia inicial"
+    "fechaEnvio": "{{transferFechaEnvio}}",
+    "fechaLlegada": "{{transferFechaLlegada}}",
+    "responsable": "{{transferResponsable}}",
+    "producto": "{{transferProductName}}",
+    "cantidad": {{transferCantidad}},
+    "observaciones": "{{transferObservaciones}}"
   }
+  
 }
 
 vars:pre-request {
   baseUrl: http://localhost:8080
   transferOriginLocationId: REPLACE_WITH_ORIGIN_LOCATION_ID
   transferDestinationLocationId: REPLACE_WITH_DESTINATION_LOCATION_ID
+  transferFechaEnvio: 2026-05-12T10:30:00
+  transferFechaLlegada: 2026-05-12T12:30:00
+  transferResponsable: Simon Arias
+  transferProductName: REPLACE_WITH_PRODUCT_NAME
+  transferCantidad: 2
+  transferObservaciones: Transferencia inicial
 }
 
 script:pre-request {
-  const token = bru.getEnvVar("token") || bru.getVar("token");
-  const transferOriginLocationId = bru.getVar("transferOriginLocationId");
-  const transferDestinationLocationId = bru.getVar("transferDestinationLocationId");
-
+  const token =
+    (bru.getEnvVar("token") || bru.getVar("token") || "").trim();
+  const transferOriginLocationId =
+    (
+      bru.getVar("transferOriginLocationId") ||
+      bru.getEnvVar("transferOriginLocationId") ||
+      ""
+    ).trim();
+  const transferDestinationLocationId =
+    (
+      bru.getVar("transferDestinationLocationId") ||
+      bru.getEnvVar("transferDestinationLocationId") ||
+      ""
+    ).trim();
+  const transferProductName =
+    (bru.getVar("transferProductName") || bru.getEnvVar("transferProductName") || "").trim();
+  const transferCantidad =
+    String(bru.getVar("transferCantidad") || bru.getEnvVar("transferCantidad") || "").trim();
+  
   if (!token) {
     throw new Error("Missing variable 'token'. Run the login request first.");
   }
-
+  
   if (!transferOriginLocationId || transferOriginLocationId === "REPLACE_WITH_ORIGIN_LOCATION_ID") {
     throw new Error("Missing variable 'transferOriginLocationId'. Set the origin location id before running this request.");
   }
-
+  
   if (!transferDestinationLocationId || transferDestinationLocationId === "REPLACE_WITH_DESTINATION_LOCATION_ID") {
     throw new Error("Missing variable 'transferDestinationLocationId'. Set the destination location id before running this request.");
   }
-
+  
   if (transferOriginLocationId === transferDestinationLocationId) {
     throw new Error("The variables 'transferOriginLocationId' and 'transferDestinationLocationId' must be different.");
   }
+  
+  if (!transferProductName || transferProductName === "REPLACE_WITH_PRODUCT_NAME") {
+    throw new Error("Missing variable 'transferProductName'. Set the product name before running this request.");
+  }
+
+  if (!transferCantidad || !/^\d+$/.test(transferCantidad) || Number(transferCantidad) <= 0) {
+    throw new Error("Invalid variable 'transferCantidad'. It must be a positive integer.");
+  }
+
+  bru.setVar("transferOriginLocationId", transferOriginLocationId);
+  bru.setVar("transferDestinationLocationId", transferDestinationLocationId);
+  bru.setVar("transferProductName", transferProductName);
+  bru.setVar("transferCantidad", transferCantidad);
 }
 
 script:post-response {
@@ -67,7 +102,8 @@ script:post-response {
   });
   
   if (data && data.idTraslado) {
-    bru.setVar("transferId", data.idTraslado);
+    bru.setVar("transferId", String(data.idTraslado));
+    bru.setEnvVar("transferId", String(data.idTraslado));
   }
 }
 
