@@ -12,4 +12,8 @@ public interface TableSessionRepository extends JpaRepository<TableSessionDomain
     Optional<TableSessionDomain> findByTableIdAndClosedAtIsNull(UUID tableId);
 
     List<TableSessionDomain> findAllByTableId(UUID tableId);
+
+    List<TableSessionDomain> findAllByOrderByOpenedAtDesc();
+
+    List<TableSessionDomain> findAllByTableIdOrderByOpenedAtDesc(UUID tableId);
 }

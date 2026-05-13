@@ -7,23 +7,27 @@ meta {
 post {
   url: {{baseUrl}}/commercial/api/v1/tables/reservations/{{reservationId}}/seat
   body: json
-  auth: inherit
+  auth: bearer
 }
 
 headers {
   Content-Type: application/json
 }
 
+auth:bearer {
+  token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ0ZXN0MUBnbWFpbC5jb20iLCJpYXQiOjE3NzgzNDA0MDAsImV4cCI6MTc3ODM0NDAwMH0.X9evx_LCfAJUiZVNuLYYreAmOgAMI99jOS-Z5q4UFNBUjIvJMvCe8tFNzL7Uqfat
+}
+
 body:json {
   {
     "guestCount": 5,
-    "observations": "Cliente ubicado desde Bruno"
+    "observations": "Cliente ubicado desde Bruno prueva de reserva"
   }
 }
 
 vars:pre-request {
   baseUrl: http://localhost:8080
-  reservationId: 31f86e7f-a416-4c10-931d-3b6f88e20b4f
+  reservationId: 7213a91b-eda3-4003-a9ff-b9a8e2a0bfce
 }
 
 script:post-response {

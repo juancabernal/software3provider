@@ -168,6 +168,27 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    public List<TableSessionDTO> getAllSessions() {
+        LocalDateTime now = now();
+        List<TableSessionDTO> result = new ArrayList<>();
+        for (TableSessionDomain session : sessionRepository.findAllByOrderByOpenedAtDesc()) {
+            result.add(toSessionDtoWithDuration(session, now));
+        }
+        return result;
+    }
+
+    @Override
+    public List<TableSessionDTO> getSessions(String tableId) {
+        TableDomain table = findTableById(tableId);
+        LocalDateTime now = now();
+        List<TableSessionDTO> result = new ArrayList<>();
+        for (TableSessionDomain session : sessionRepository.findAllByTableIdOrderByOpenedAtDesc(table.getId())) {
+            result.add(toSessionDtoWithDuration(session, now));
+        }
+        return result;
+    }
+
+    @Override
     public TableSessionDTO updateGuestCount(String tableId, String sessionId, Integer guestCount) {
         TableDomain table = findTableById(tableId);
         if (guestCount == null || guestCount < 1) {
@@ -218,20 +239,19 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public List<TableSessionDTO> getSessionHistory(String tableId) {
-        TableDomain table = findTableById(tableId);
-        List<TableSessionDTO> result = new ArrayList<>();
-        for (TableSessionDomain session : sessionRepository.findAllByTableId(table.getId())) {
-            TableSessionDTO dto = tableMapper.toSessionDto(session);
-            if (session.getClosedAt() != null && session.getDurationMinutes() != null) {
-                dto.setDurationText(formatDuration(session.getDurationMinutes()));
-            } else if (session.getClosedAt() == null) {
-                long elapsed = ChronoUnit.MINUTES.between(session.getOpenedAt(), now());
-                dto.setDurationMinutes(elapsed);
-                dto.setDurationText(formatDuration(elapsed));
-            }
-            result.add(dto);
+        return getSessions(tableId);
+    }
+
+    private TableSessionDTO toSessionDtoWithDuration(TableSessionDomain session, LocalDateTime now) {
+        TableSessionDTO dto = tableMapper.toSessionDto(session);
+        if (session.getClosedAt() != null && session.getDurationMinutes() != null) {
+            dto.setDurationText(formatDuration(session.getDurationMinutes()));
+        } else if (session.getClosedAt() == null) {
+            long elapsed = ChronoUnit.MINUTES.between(session.getOpenedAt(), now);
+            dto.setDurationMinutes(elapsed);
+            dto.setDurationText(formatDuration(elapsed));
         }
-        return result;
+        return dto;
     }
 
     // ── RESERVAS ──────────────────────────────────────────────────────────────
@@ -269,6 +289,39 @@ public class TableServiceImpl implements TableService {
             throw new TableResourceNotFoundException("No se encontró una reserva activa o pendiente para la mesa: " + tableId);
         }
         return tableMapper.toReservationDto(reservation);
+    }
+
+    @Override
+    public List<TableReservationDTO> getAllActiveReservations() {
+        LocalDateTime now = now();
+        List<TableReservationDTO> result = new ArrayList<>();
+
+        List<TableReservationDomain> reservations = reservationRepository
+                .findAllByStatusInOrderByReservationDateAscReservationTimeAsc(
+                        List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED)
+                );
+
+        for (TableReservationDomain reservation : reservations) {
+            if (isActiveReservation(reservation, now)) {
+                result.add(tableMapper.toReservationDto(reservation));
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<TableReservationDTO> getReservations(String tableId) {
+        TableDomain table = findTableById(tableId);
+        LocalDateTime now = now();
+        expireOverdueReservations(table.getId(), now);
+
+        List<TableReservationDTO> result = new ArrayList<>();
+        for (TableReservationDomain reservation : reservationRepository
+                .findAllByTableIdOrderByReservationDateAscReservationTimeAsc(table.getId())) {
+            result.add(tableMapper.toReservationDto(reservation));
+        }
+        return result;
     }
 
     @Override
@@ -708,10 +761,16 @@ public class TableServiceImpl implements TableService {
                 .findAllByTableIdAndStatusInOrderByReservationDateAscReservationTimeAsc(
                         tableId, List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED));
         for (TableReservationDomain reservation : reservations) {
-            if (reservation.getStatus() == ReservationStatus.CONFIRMED) return reservation;
-            if (!now.isAfter(graceEnd(reservation))) return reservation;
+            if (isActiveReservation(reservation, now)) return reservation;
         }
         return null;
+    }
+
+    private boolean isActiveReservation(TableReservationDomain reservation, LocalDateTime now) {
+        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            return true;
+        }
+        return reservation.getStatus() == ReservationStatus.PENDING && !now.isAfter(graceEnd(reservation));
     }
 
     private TableReservationDomain findBlockingPendingReservation(UUID tableId, LocalDateTime now) {

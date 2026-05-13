@@ -5,15 +5,19 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/commercial/api/v1/tables/{{tableId}}/session/{{sessionId}}/close
+  url: {{baseUrl}}/commercial/api/v1/tables/{{tableId}}/sessions/{{sessionId}}/close
   body: none
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ0ZXN0MUBnbWFpbC5jb20iLCJpYXQiOjE3NzgzMzMxNzAsImV4cCI6MTc3ODMzNjc3MH0.jHrqxOwxH7vWFF1jarP8Lsz8RztYYlywkQrughE7Xr57MXXq6C_4r-PlZHxNN8Y9
 }
 
 vars:pre-request {
   baseUrl: http://localhost:8080
-  tableId: 0a2f0f27-cdcb-4793-94c7-d0afb0e409da
-  sessionId: a62c7cd9-c44d-4ed4-9885-2c63c3a1e0a2
+  tableId: 4339662f-d046-4937-aaf3-d654aad03b21
+  sessionId: fb9b6b7a-a5ec-4ec2-bacf-a8ea51e08a86
 }
 
 tests {

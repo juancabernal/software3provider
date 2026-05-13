@@ -11,6 +11,10 @@ public interface TableReservationRepository extends JpaRepository<TableReservati
 
     List<TableReservationDomain> findAllByTableIdOrderByReservationDateAscReservationTimeAsc(UUID tableId);
 
+    List<TableReservationDomain> findAllByStatusInOrderByReservationDateAscReservationTimeAsc(
+            Collection<ReservationStatus> statuses
+    );
+
     List<TableReservationDomain> findAllByTableIdAndStatusInOrderByReservationDateAscReservationTimeAsc(
             UUID tableId,
             Collection<ReservationStatus> statuses
