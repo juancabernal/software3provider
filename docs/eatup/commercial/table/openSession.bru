@@ -7,19 +7,23 @@ meta {
 post {
   url: {{baseUrl}}/commercial/api/v1/tables/{{tableId}}/sessions
   body: json
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ0ZXN0MUBnbWFpbC5jb20iLCJpYXQiOjE3NzgzMzY5NzIsImV4cCI6MTc3ODM0MDU3Mn0.YalNyLIZV1-9fgtitZoWLQzTb6PwgmiHdsNhbWcm5B_Pfu4cLQtIosmsCc96NmQw
 }
 
 body:json {
   {
     "guestCount": 3,
-    "observations": "Cliente sin reserva (Walk-in)"
+    "observations": "Clie (Walk-in)"
   }
 }
 
 vars:pre-request {
   baseUrl: http://localhost:8080
-  tableId: 0a2f0f27-cdcb-4793-94c7-d0afb0e409da
+  tableId: 4339662f-d046-4937-aaf3-d654aad03b21
 }
 
 settings {

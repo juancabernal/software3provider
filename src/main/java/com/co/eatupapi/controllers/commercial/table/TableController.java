@@ -48,6 +48,16 @@ public class TableController {
         return ResponseEntity.ok(service.getTables(status, venueId, reserved, canOpenNow));
     }
 
+    @GetMapping("/sessions")
+    public ResponseEntity<List<TableSessionDTO>> getAllSessions() {
+        return ResponseEntity.ok(service.getAllSessions());
+    }
+
+    @GetMapping("/reservations/active")
+    public ResponseEntity<List<TableReservationDTO>> getAllActiveReservations() {
+        return ResponseEntity.ok(service.getAllActiveReservations());
+    }
+
     @GetMapping("/{tableId}")
     public ResponseEntity<TableDTO> getTableById(@PathVariable String tableId) {
         return ResponseEntity.ok(service.getTableById(tableId));
@@ -70,6 +80,11 @@ public class TableController {
     @GetMapping("/{tableId}/sessions/active")
     public ResponseEntity<TableSessionDTO> getActiveSession(@PathVariable String tableId) {
         return ResponseEntity.ok(service.getActiveSession(tableId));
+    }
+
+    @GetMapping("/{tableId}/sessions")
+    public ResponseEntity<List<TableSessionDTO>> getSessions(@PathVariable String tableId) {
+        return ResponseEntity.ok(service.getSessions(tableId));
     }
 
     @PatchMapping("/{tableId}/sessions/{sessionId}/guests")
@@ -116,6 +131,11 @@ public class TableController {
     @GetMapping("/{tableId}/reservation")
     public ResponseEntity<TableReservationDTO> getActiveReservation(@PathVariable String tableId) {
         return ResponseEntity.ok(service.getActiveReservation(tableId));
+    }
+
+    @GetMapping("/{tableId}/reservations")
+    public ResponseEntity<List<TableReservationDTO>> getReservations(@PathVariable String tableId) {
+        return ResponseEntity.ok(service.getReservations(tableId));
     }
 
     @GetMapping("/reservations/search")

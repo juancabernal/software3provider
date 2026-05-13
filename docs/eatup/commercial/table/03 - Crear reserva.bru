@@ -15,22 +15,22 @@ headers {
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ0ZXN0MUBnbWFpbC5jb20iLCJpYXQiOjE3Nzc4NDk4MzksImV4cCI6MTc3Nzg1MzQzOX0.wqz2aWTVC0Z_2vGSMKMaWnkUVxHuSHnR8-ijNtrNLwal0VgSOAhJ-LIuUcmnGRwY
+  token: {{baseUrl}}/commercial/api/v1/tables/{{tableId}}/sessions/active
 }
 
 body:json {
   {
-    "reservationDate": "{{reservationDate}}",
-    "reservationTime": "{{reservationTime}}",
-    "guestName": "Cliente Bruno",
-    "guestDocumentNumber": "{{guestDocumentNumber}}",
-    "guestCount": 4
+      "reservationDate": "2026-06-09",
+      "reservationTime": "10:50",
+      "guestName": "Cliente Bruno",
+      "guestDocumentNumber": "1234567890",
+      "guestCount": 4
   }
 }
 
 vars:pre-request {
   baseUrl: http://localhost:8080
-  tableId: e80232a7-6f4c-470d-b378-b2c61ca63637
+  tableId: 4339662f-d046-4937-aaf3-d654aad03b21
 }
 
 script:pre-request {

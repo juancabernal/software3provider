@@ -7,12 +7,16 @@ meta {
 get {
   url: {{baseUrl}}/commercial/api/v1/tables/reservations/search?guestDocumentNumber={{guestDocumentNumber}}
   body: none
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ0ZXN0MUBnbWFpbC5jb20iLCJpYXQiOjE3NzgzMzc3OTMsImV4cCI6MTc3ODM0MTM5M30.V6W-dmziCX4P2Q_4hIjCm8GCZFroMjoxzXtMTh2gDGrhCTBXL0W42g7N4gEp9aO0
 }
 
 vars:pre-request {
   baseUrl: http://localhost:8080
-  guestDocumentNumber: 2
+  guestDocumentNumber: 12345678901
 }
 
 tests {

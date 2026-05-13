@@ -1,4 +1,4 @@
-package com.co.eatupapi.utils.commercial.table.security;
+/*package com.co.eatupapi.utils.commercial.table.security;
 
 import com.co.eatupapi.config.user.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -86,4 +86,4 @@ public class TableSecurityConfig {
 
         objectMapper.writeValue(response.getWriter(), body);
     }
-}
+}*/
