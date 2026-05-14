@@ -9,4 +9,8 @@ public interface PaymentMethodService {
     List<PaymentMethodResponse> getActivePaymentMethods();
 
     List<PaymentMethodResponse> getAllPaymentMethods();
+
+    void createPaymentMethod(CreatePaymentMethodRequest request);
+
+    void togglePaymentMethodStatus(java.util.UUID id);
 }
