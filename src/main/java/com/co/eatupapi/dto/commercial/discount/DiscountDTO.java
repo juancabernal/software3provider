@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 import java.util.UUID;
 
@@ -25,6 +26,9 @@ public class DiscountDTO {
     private String description;
 
     private Boolean status;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 
     public DiscountDTO() {}
 
@@ -50,4 +54,10 @@ public class DiscountDTO {
 
     public Boolean getStatus() { return status; }
     public void setStatus(Boolean status) { this.status = status; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getModifiedAt() { return modifiedAt; }
+    public void setModifiedAt(LocalDateTime modifiedAt) { this.modifiedAt = modifiedAt; }
 }

@@ -69,36 +69,28 @@ public class InventoryRabbitMQConfig {
     @Value("${rabbitmq.routing-key.location.patch}")
     private String locationPatchRoutingKey;
 
-    @Value("${rabbitmq.exchange.category}")
-    private String categoryExchange;
+    //RECIPE
 
-    @Value("${rabbitmq.exchange.category.dlx}")
-    private String categoryDeadLetterExchange;
+    @Value("${rabbitmq.exchange.recipe}")
+    private String recipeExchange;
 
-    @Value("${rabbitmq.queue.category.create}")
-    private String categoryCreateQueue;
+    @Value("${rabbitmq.queue.recipe.create}")
+    private String recipeCreateQueue;
 
-    @Value("${rabbitmq.queue.category.update-status}")
-    private String categoryUpdateStatusQueue;
+    @Value("${rabbitmq.queue.recipe.update}")
+    private String recipeUpdateQueue;
 
-    @Value("${rabbitmq.queue.category.create.dlq}")
-    private String categoryCreateDeadLetterQueue;
+    @Value("${rabbitmq.queue.recipe.patch}")
+    private String recipePatchQueue;
 
-    @Value("${rabbitmq.queue.category.update-status.dlq}")
-    private String categoryUpdateStatusDeadLetterQueue;
+    @Value("${rabbitmq.routing-key.recipe.create}")
+    private String recipeCreateRoutingKey;
 
-    @Value("${rabbitmq.routing-key.category.create}")
-    private String categoryCreateRoutingKey;
+    @Value("${rabbitmq.routing-key.recipe.update}")
+    private String recipeUpdateRoutingKey;
 
-    @Value("${rabbitmq.routing-key.category.update-status}")
-    private String categoryUpdateStatusRoutingKey;
-
-    @Value("${rabbitmq.routing-key.category.create.dlq}")
-    private String categoryCreateDeadLetterRoutingKey;
-
-    @Value("${rabbitmq.routing-key.category.update-status.dlq}")
-    private String categoryUpdateStatusDeadLetterRoutingKey;
-
+    @Value("${rabbitmq.routing-key.recipe.patch}")
+    private String recipePatchRoutingKey;
 
     @Bean
     public RabbitAdmin rabbitAdminInventory(ConnectionFactory connectionFactory) {
@@ -228,68 +220,46 @@ public class InventoryRabbitMQConfig {
                 .with(locationPatchRoutingKey);
     }
 
+    // RECIPE BEANS
+
     @Bean
-    public DirectExchange categoryExchange() {
-        return new DirectExchange(categoryExchange);
+    public DirectExchange recipeExchange() {
+        return new DirectExchange(recipeExchange);
     }
 
     @Bean
-    public DirectExchange categoryDeadLetterExchange() {
-        return new DirectExchange(categoryDeadLetterExchange);
+    public Queue recipeCreateQueue() {
+        return QueueBuilder.durable(recipeCreateQueue).build();
     }
 
     @Bean
-    public Queue categoryCreateQueue() {
-        return QueueBuilder.durable(categoryCreateQueue)
-                .deadLetterExchange(categoryDeadLetterExchange)
-                .deadLetterRoutingKey(categoryCreateDeadLetterRoutingKey)
-                .build();
+    public Queue recipeUpdateQueue() {
+        return QueueBuilder.durable(recipeUpdateQueue).build();
     }
 
     @Bean
-    public Queue categoryUpdateStatusQueue() {
-        return QueueBuilder.durable(categoryUpdateStatusQueue)
-                .deadLetterExchange(categoryDeadLetterExchange)
-                .deadLetterRoutingKey(categoryUpdateStatusDeadLetterRoutingKey)
-                .build();
+    public Queue recipePatchQueue() {
+        return QueueBuilder.durable(recipePatchQueue).build();
     }
 
     @Bean
-    public Queue categoryCreateDeadLetterQueue() {
-        return QueueBuilder.durable(categoryCreateDeadLetterQueue).build();
+    public Binding recipeCreateBinding(Queue recipeCreateQueue, DirectExchange recipeExchange) {
+        return BindingBuilder.bind(recipeCreateQueue)
+                .to(recipeExchange)
+                .with(recipeCreateRoutingKey);
     }
 
     @Bean
-    public Queue categoryUpdateStatusDeadLetterQueue() {
-        return QueueBuilder.durable(categoryUpdateStatusDeadLetterQueue).build();
+    public Binding recipeUpdateBinding(Queue recipeUpdateQueue, DirectExchange recipeExchange) {
+        return BindingBuilder.bind(recipeUpdateQueue)
+                .to(recipeExchange)
+                .with(recipeUpdateRoutingKey);
     }
 
     @Bean
-    public Binding categoryCreateBinding(Queue categoryCreateQueue, DirectExchange categoryExchange) {
-        return BindingBuilder.bind(categoryCreateQueue)
-                .to(categoryExchange)
-                .with(categoryCreateRoutingKey);
+    public Binding recipePatchBinding(Queue recipePatchQueue, DirectExchange recipeExchange) {
+        return BindingBuilder.bind(recipePatchQueue)
+                .to(recipeExchange)
+                .with(recipePatchRoutingKey);
     }
-
-    @Bean
-    public Binding categoryUpdateStatusBinding(Queue categoryUpdateStatusQueue, DirectExchange categoryExchange) {
-        return BindingBuilder.bind(categoryUpdateStatusQueue)
-                .to(categoryExchange)
-                .with(categoryUpdateStatusRoutingKey);
-    }
-
-    @Bean
-    public Binding categoryCreateDeadLetterBinding(Queue categoryCreateDeadLetterQueue, DirectExchange categoryDeadLetterExchange) {
-        return BindingBuilder.bind(categoryCreateDeadLetterQueue)
-                .to(categoryDeadLetterExchange)
-                .with(categoryCreateDeadLetterRoutingKey);
-    }
-
-    @Bean
-    public Binding categoryUpdateStatusDeadLetterBinding(Queue categoryUpdateStatusDeadLetterQueue, DirectExchange categoryDeadLetterExchange) {
-        return BindingBuilder.bind(categoryUpdateStatusDeadLetterQueue)
-                .to(categoryDeadLetterExchange)
-                .with(categoryUpdateStatusDeadLetterRoutingKey);
-    }
-
 }
