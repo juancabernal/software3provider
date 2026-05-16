@@ -9,13 +9,16 @@ import org.springframework.stereotype.Component;
 public class DiscountMapper {
 
     public DiscountDTO toDto(DiscountDomain domain) {
-        return new DiscountDTO(
+        DiscountDTO dto = new DiscountDTO(
                 domain.getId(),
                 domain.getCategoryId(),
                 domain.getPercentage(),
                 domain.getDescription(),
                 domain.getStatus()
         );
+        dto.setCreatedAt(domain.getCreatedAt());
+        dto.setModifiedAt(domain.getModifiedAt());
+        return dto;
     }
 
     public DiscountDomain toDomain(DiscountDTO dto) {
