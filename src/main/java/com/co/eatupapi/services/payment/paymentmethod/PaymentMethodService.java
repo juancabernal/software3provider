@@ -1,5 +1,6 @@
 package com.co.eatupapi.services.payment.paymentmethod;
 
+import com.co.eatupapi.dto.payment.paymentmethod.CreatePaymentMethodRequest;
 import com.co.eatupapi.dto.payment.paymentmethod.PaymentMethodResponse;
 
 import java.util.List;
