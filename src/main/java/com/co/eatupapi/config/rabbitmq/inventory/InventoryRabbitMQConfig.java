@@ -69,6 +69,29 @@ public class InventoryRabbitMQConfig {
     @Value("${rabbitmq.routing-key.location.patch}")
     private String locationPatchRoutingKey;
 
+    //RECIPE
+
+    @Value("${rabbitmq.exchange.recipe}")
+    private String recipeExchange;
+
+    @Value("${rabbitmq.queue.recipe.create}")
+    private String recipeCreateQueue;
+
+    @Value("${rabbitmq.queue.recipe.update}")
+    private String recipeUpdateQueue;
+
+    @Value("${rabbitmq.queue.recipe.patch}")
+    private String recipePatchQueue;
+
+    @Value("${rabbitmq.routing-key.recipe.create}")
+    private String recipeCreateRoutingKey;
+
+    @Value("${rabbitmq.routing-key.recipe.update}")
+    private String recipeUpdateRoutingKey;
+
+    @Value("${rabbitmq.routing-key.recipe.patch}")
+    private String recipePatchRoutingKey;
+
     @Bean
     public RabbitAdmin rabbitAdminInventory(ConnectionFactory connectionFactory) {
         RabbitAdmin admin = new RabbitAdmin(connectionFactory);
@@ -195,5 +218,48 @@ public class InventoryRabbitMQConfig {
         return BindingBuilder.bind(locationPatchQueue)
                 .to(locationExchange)
                 .with(locationPatchRoutingKey);
+    }
+
+    // RECIPE BEANS
+
+    @Bean
+    public DirectExchange recipeExchange() {
+        return new DirectExchange(recipeExchange);
+    }
+
+    @Bean
+    public Queue recipeCreateQueue() {
+        return QueueBuilder.durable(recipeCreateQueue).build();
+    }
+
+    @Bean
+    public Queue recipeUpdateQueue() {
+        return QueueBuilder.durable(recipeUpdateQueue).build();
+    }
+
+    @Bean
+    public Queue recipePatchQueue() {
+        return QueueBuilder.durable(recipePatchQueue).build();
+    }
+
+    @Bean
+    public Binding recipeCreateBinding(Queue recipeCreateQueue, DirectExchange recipeExchange) {
+        return BindingBuilder.bind(recipeCreateQueue)
+                .to(recipeExchange)
+                .with(recipeCreateRoutingKey);
+    }
+
+    @Bean
+    public Binding recipeUpdateBinding(Queue recipeUpdateQueue, DirectExchange recipeExchange) {
+        return BindingBuilder.bind(recipeUpdateQueue)
+                .to(recipeExchange)
+                .with(recipeUpdateRoutingKey);
+    }
+
+    @Bean
+    public Binding recipePatchBinding(Queue recipePatchQueue, DirectExchange recipeExchange) {
+        return BindingBuilder.bind(recipePatchQueue)
+                .to(recipeExchange)
+                .with(recipePatchRoutingKey);
     }
 }

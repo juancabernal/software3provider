@@ -1,0 +1,65 @@
+{
+  "vhosts": [
+    { "name": "/" }
+  ],
+  "exchanges": [
+    {
+      "name": "recipe.exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "recipe.create.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "recipe.update.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "recipe.patch.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "recipe.exchange",
+      "vhost": "/",
+      "destination": "recipe.create.queue",
+      "destination_type": "queue",
+      "routing_key": "recipe.create.requested",
+      "arguments": {}
+    },
+    {
+      "source": "recipe.exchange",
+      "vhost": "/",
+      "destination": "recipe.update.queue",
+      "destination_type": "queue",
+      "routing_key": "recipe.update.requested",
+      "arguments": {}
+    },
+    {
+      "source": "recipe.exchange",
+      "vhost": "/",
+      "destination": "recipe.patch.queue",
+      "destination_type": "queue",
+      "routing_key": "recipe.patch.requested",
+      "arguments": {}
+    }
+  ]
+}
