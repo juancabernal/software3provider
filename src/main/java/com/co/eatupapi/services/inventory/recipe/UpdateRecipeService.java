@@ -3,6 +3,7 @@ package com.co.eatupapi.services.inventory.recipe;
 import com.co.eatupapi.domain.inventory.recipe.RecipeDomain;
 import com.co.eatupapi.dto.inventory.recipe.RecipeRequest;
 import com.co.eatupapi.dto.inventory.recipe.RecipeSubRecipeRequest;
+import com.co.eatupapi.messaging.inventory.recipe.RecipeUpdateEventPublisher;
 import com.co.eatupapi.repositories.inventory.recipe.RecipeRepository;
 import com.co.eatupapi.utils.inventory.recipe.exceptions.RecipeNotFoundException;
 import com.co.eatupapi.utils.inventory.recipe.mapper.RecipeMapper;
@@ -25,6 +26,7 @@ public class UpdateRecipeService {
     private final CalculateRecipeCostService costService;
     private final CalculateRecipeSellingPriceService sellingPriceService;
     private final RecalculateDependentRecipesCostService recalculateDependentRecipesCostService;
+    private final RecipeUpdateEventPublisher publisher;
 
     public UpdateRecipeService(
             RecipeRepository repo,
@@ -32,7 +34,9 @@ public class UpdateRecipeService {
             RecipeValidatorService recipeValidator,
             RecipeExistenceValidatorService existenceValidator,
             CalculateRecipeCostService costService,
-            CalculateRecipeSellingPriceService sellingPriceService, RecalculateDependentRecipesCostService recalculateDependentRecipesCostService
+            CalculateRecipeSellingPriceService sellingPriceService,
+            RecalculateDependentRecipesCostService recalculateDependentRecipesCostService,
+            RecipeUpdateEventPublisher publisher
     ) {
         this.repo = repo;
         this.mapper = mapper;
@@ -41,6 +45,7 @@ public class UpdateRecipeService {
         this.costService = costService;
         this.sellingPriceService = sellingPriceService;
         this.recalculateDependentRecipesCostService = recalculateDependentRecipesCostService;
+        this.publisher = publisher;
     }
 
     @Transactional
@@ -73,6 +78,8 @@ public class UpdateRecipeService {
         recalculateDependentRecipesCostService.run(
                 existingRecipe.getId()
         );
+
+        publisher.publish(request);
     }
 
     private void validateSubRecipesIfPresent(RecipeRequest request) {

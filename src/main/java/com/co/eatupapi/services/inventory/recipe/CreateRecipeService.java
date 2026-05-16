@@ -3,6 +3,7 @@ package com.co.eatupapi.services.inventory.recipe;
 import com.co.eatupapi.domain.inventory.recipe.RecipeDomain;
 import com.co.eatupapi.dto.inventory.recipe.RecipeRequest;
 import com.co.eatupapi.dto.inventory.recipe.RecipeSubRecipeRequest;
+import com.co.eatupapi.messaging.inventory.recipe.RecipeCreateEventPublisher;
 import com.co.eatupapi.repositories.inventory.recipe.RecipeRepository;
 import com.co.eatupapi.utils.inventory.recipe.exceptions.ErrorCode;
 import com.co.eatupapi.utils.inventory.recipe.exceptions.RecipeBusinessException;
@@ -26,6 +27,7 @@ public class CreateRecipeService {
     private final RecipeExistenceValidatorService existenceValidator;
     private final CalculateRecipeCostService costService;
     private final CalculateRecipeSellingPriceService sellingPriceService;
+    private final RecipeCreateEventPublisher publisher;
 
     public CreateRecipeService(
             RecipeRepository repo,
@@ -34,7 +36,8 @@ public class CreateRecipeService {
             RecipeValidatorService recipeValidator,
             RecipeExistenceValidatorService existenceValidator,
             CalculateRecipeCostService costService,
-            CalculateRecipeSellingPriceService sellingPriceService
+            CalculateRecipeSellingPriceService sellingPriceService,
+            RecipeCreateEventPublisher publisher
     ) {
         this.repo = repo;
         this.mapper = mapper;
@@ -43,6 +46,7 @@ public class CreateRecipeService {
         this.existenceValidator = existenceValidator;
         this.costService = costService;
         this.sellingPriceService = sellingPriceService;
+        this.publisher = publisher;
     }
 
     @Transactional
@@ -72,6 +76,8 @@ public class CreateRecipeService {
         recipeValidator.validate(recipe);
 
         repo.save(recipe);
+
+        publisher.publish(request);
     }
 
     private void validatePreviousExistence(String name) {
