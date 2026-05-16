@@ -3,6 +3,9 @@ package com.co.eatupapi.services.inventory.categories.impl;
 import com.co.eatupapi.domain.inventory.categories.CategoryDomain;
 import com.co.eatupapi.domain.inventory.categories.CategoryStatus;
 import com.co.eatupapi.dto.inventory.categories.CategoryDTO;
+import com.co.eatupapi.dto.inventory.categories.CategoryStatusUpdateDTO;
+import com.co.eatupapi.dto.inventory.categories.CategoryUpdateStatusRequestedMessage;
+import com.co.eatupapi.messaging.inventory.categories.CategoryEventPublisher;
 import com.co.eatupapi.repositories.inventory.categories.CategoryRepository;
 import com.co.eatupapi.services.inventory.categories.CategoryService;
 import com.co.eatupapi.utils.inventory.categories.exceptions.BusinessException;
@@ -23,10 +26,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final CategoryEventPublisher categoryEventPublisher;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository,
+                               CategoryMapper categoryMapper,
+                               CategoryEventPublisher categoryEventPublisher) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.categoryEventPublisher = categoryEventPublisher;
     }
 
     @Override
@@ -45,7 +52,9 @@ public class CategoryServiceImpl implements CategoryService {
         categoryDomain.setModifiedDate(now);
 
         CategoryDomain savedCategory = persistNewCategory(categoryDomain, request.getName());
-        return categoryMapper.toDto(savedCategory);
+        CategoryDTO savedCategoryDto = categoryMapper.toDto(savedCategory);
+        categoryEventPublisher.publishCreateRequested(savedCategoryDto);
+        return savedCategoryDto;
     }
 
     @Override
@@ -80,7 +89,15 @@ public class CategoryServiceImpl implements CategoryService {
         existing.setModifiedDate(LocalDateTime.now());
 
         CategoryDomain updatedCategory = categoryRepository.save(existing);
-        return categoryMapper.toDto(updatedCategory);
+        CategoryDTO updatedCategoryDto = categoryMapper.toDto(updatedCategory);
+        CategoryStatusUpdateDTO statusUpdate = new CategoryStatusUpdateDTO();
+        statusUpdate.setStatus(newStatus.name());
+
+        categoryEventPublisher.publishUpdateStatusRequested(
+                new CategoryUpdateStatusRequestedMessage(updatedCategory.getId(), statusUpdate)
+        );
+
+        return updatedCategoryDto;
     }
 
     @Override
