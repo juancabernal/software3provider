@@ -22,6 +22,9 @@ public class InvoiceMessagePublisher {
     @Value("${rabbitmq.routing-key.payment.invoice.mark-paid}")
     private String markPaidRoutingKey;
 
+    @Value("${rabbitmq.routing-key.payment.invoice.status-update}")
+    private String statusUpdateRoutingKey;
+
     public InvoiceMessagePublisher(@Qualifier("paymentRabbitTemplate") RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
@@ -36,5 +39,9 @@ public class InvoiceMessagePublisher {
 
     public void publishMarkPaid(InvoiceMarkPaidMessage message) {
         rabbitTemplate.convertAndSend(exchange, markPaidRoutingKey, message);
+    }
+
+    public void publishStatusUpdate(InvoiceStatusUpdateMessage message) {
+        rabbitTemplate.convertAndSend(exchange, statusUpdateRoutingKey, message);
     }
 }

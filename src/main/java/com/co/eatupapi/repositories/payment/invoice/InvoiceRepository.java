@@ -13,8 +13,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 
     Page<Invoice> findByLocationId(UUID locationId, Pageable pageable);
 
-    boolean existsByInvoiceNumberAndLocationId(String invoiceNumber, UUID locationId);
-
     boolean existsBySalesIdAndLocationIdAndStatusNotIn(
             UUID salesId,
             UUID locationId,

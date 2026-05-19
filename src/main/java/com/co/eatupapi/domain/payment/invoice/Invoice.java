@@ -55,6 +55,9 @@ public class Invoice {
     @Column(name = "table_id")
     private String tableId;
 
+    @Column(name = "table_session_id")
+    private String tableSessionId;
+
     @Column(name = "location_name", length = 150)
     private String locationName;
 

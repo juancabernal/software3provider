@@ -18,10 +18,10 @@ import java.util.UUID;
 @Schema(description = "Factura generada en el sistema")
 public class InvoiceResponse {
 
-    @Schema(description = "ID único de la factura")
+    @Schema(description = "ID unico de la factura")
     private UUID invoiceId;
 
-    @Schema(description = "Número de factura", example = "INV-001")
+    @Schema(description = "Numero de factura", example = "FAC-000001")
     private String invoiceNumber;
 
     @Schema(description = "Estado de la factura", example = "OPEN")
@@ -33,7 +33,7 @@ public class InvoiceResponse {
     @Schema(description = "ID de la venta asociada")
     private UUID salesId;
 
-    @Schema(description = "ID de la relación cliente-descuento asociada")
+    @Schema(description = "ID de la relacion cliente-descuento asociada")
     private UUID customerDiscountId;
 
     @Schema(description = "ID de la sede asociada")
@@ -42,8 +42,11 @@ public class InvoiceResponse {
     @Schema(description = "ID del descuento asociado")
     private UUID discountId;
 
-    @Schema(description = "Identificador de mesa obtenido desde sales")
+    @Schema(description = "Identificador de mesa capturado en el snapshot")
     private String tableId;
+
+    @Schema(description = "Identificador de sesion de mesa capturado en el snapshot")
+    private String tableSessionId;
 
     @Schema(description = "Nombre de la sede asociada")
     private String locationName;
@@ -51,10 +54,10 @@ public class InvoiceResponse {
     @Schema(description = "ID del cliente")
     private UUID customerId;
 
-    @Schema(description = "Porcentaje de descuento resuelto desde descuentos")
+    @Schema(description = "Porcentaje de descuento aplicado")
     private BigDecimal discountPercentage;
 
-    @Schema(description = "Descripción del descuento resuelto desde descuentos")
+    @Schema(description = "Descripcion del descuento aplicado")
     private String discountDescription;
 
     @Schema(description = "Subtotal antes de descuentos e impuestos", example = "15000.00")
