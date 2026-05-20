@@ -42,6 +42,9 @@ public class PaymentRabbitMQConfig {
     @Value("${rabbitmq.queue.payment.invoice.mark-paid}")
     private String invoiceMarkPaidQueueName;
 
+    @Value("${rabbitmq.queue.payment.invoice.status-update}")
+    private String invoiceStatusUpdateQueueName;
+
     @Value("${rabbitmq.routing-key.payment.invoice.create}")
     private String invoiceCreateRoutingKey;
 
@@ -50,6 +53,9 @@ public class PaymentRabbitMQConfig {
 
     @Value("${rabbitmq.routing-key.payment.invoice.mark-paid}")
     private String invoiceMarkPaidRoutingKey;
+
+    @Value("${rabbitmq.routing-key.payment.invoice.status-update}")
+    private String invoiceStatusUpdateRoutingKey;
 
     @Bean
     public RabbitAdmin rabbitAdminPayment(ConnectionFactory connectionFactory) {
@@ -102,6 +108,11 @@ public class PaymentRabbitMQConfig {
     }
 
     @Bean
+    public Queue paymentInvoiceStatusUpdateQueue() {
+        return QueueBuilder.durable(invoiceStatusUpdateQueueName).build();
+    }
+
+    @Bean
     public Binding paymentCashReceiptCreateBinding(Queue paymentCashReceiptCreateQueue, DirectExchange paymentExchange) {
         return BindingBuilder
                 .bind(paymentCashReceiptCreateQueue)
@@ -145,5 +156,15 @@ public class PaymentRabbitMQConfig {
                 .bind(paymentInvoiceMarkPaidQueue)
                 .to(paymentExchange)
                 .with(invoiceMarkPaidRoutingKey);
+    }
+
+    @Bean
+    public Binding paymentInvoiceStatusUpdateBinding(
+            @Qualifier("paymentInvoiceStatusUpdateQueue") Queue paymentInvoiceStatusUpdateQueue,
+            @Qualifier("paymentExchange") DirectExchange paymentExchange) {
+        return BindingBuilder
+                .bind(paymentInvoiceStatusUpdateQueue)
+                .to(paymentExchange)
+                .with(invoiceStatusUpdateRoutingKey);
     }
 }
