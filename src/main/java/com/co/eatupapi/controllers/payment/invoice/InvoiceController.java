@@ -115,7 +115,7 @@ public class InvoiceController {
     }
 
     private String statusMessage(InvoiceStatus status) {
-        if (status == InvoiceStatus.CANCELLED) {
+        if (status == InvoiceStatus.CANCELLED || status == InvoiceStatus.VOIDED) {
             return "Invoice cancel command published";
         }
         if (status == InvoiceStatus.PAID) {

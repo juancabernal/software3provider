@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,7 +13,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvoiceMarkPaidMessage {
+public class InvoiceStatusUpdateMessage {
 
     private UUID locationId;
     private UUID invoiceId;
@@ -22,9 +21,6 @@ public class InvoiceMarkPaidMessage {
     private UUID salesId;
     private String tableId;
     private String tableSessionId;
-    private UUID cashReceiptId;
-    private BigDecimal paidAmount;
-    private UUID paymentMethodId;
     private InvoiceStatus previousStatus;
     private InvoiceStatus status;
     private LocalDateTime eventDate;
