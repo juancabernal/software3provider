@@ -18,7 +18,6 @@ import java.util.UUID;
 @Schema(description = "Respuesta con los datos de una compra")
 public class PurchaseResponse {
 
-    @JsonIgnore
     @Schema(description = "ID único de la compra")
     private UUID id;
 
