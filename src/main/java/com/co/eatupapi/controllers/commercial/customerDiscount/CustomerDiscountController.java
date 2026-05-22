@@ -12,7 +12,7 @@ import java.util.UUID;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/comercial/api/v1")
+@RequestMapping("/commercial/api/v1")
 public class CustomerDiscountController {
 
     private final CustomerDiscountService customerDiscountService;
