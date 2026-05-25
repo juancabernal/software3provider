@@ -144,6 +144,14 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
+    public List<TransferResponseDTO> findAllClaimed() {
+        return transferRepository.findByEstado(TransferStatus.RECLAMADO)
+                .stream()
+                .map(transferMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public List<TransferResponseDTO> findIncoming(String sedeDestino) {
         validateRequiredLocationId(sedeDestino, DESTINATION_REQUIRED_MESSAGE, DESTINATION_ROLE);
         return transferRepository.findBySedeDestino(sedeDestino.trim())
