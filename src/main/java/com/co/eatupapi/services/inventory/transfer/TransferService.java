@@ -22,6 +22,8 @@ public interface TransferService {
 
     List<TransferResponseDTO> findAllCancelled();
 
+    List<TransferResponseDTO> findAllClaimed();
+
     List<TransferResponseDTO> findIncoming(String sedeDestino);
 
     TransferResponseDTO confirmReceipt(Long id, String sedeDestino);
