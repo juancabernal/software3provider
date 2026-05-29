@@ -15,6 +15,7 @@ public class CategoryMapper {
         categoryDTO.setType(categoryDomain.getType());
         categoryDTO.setSubtype(categoryDomain.getSubtype());
         categoryDTO.setName(categoryDomain.getName());
+        categoryDTO.setLocationId(categoryDomain.getLocationId() != null ? categoryDomain.getLocationId().toString() : null);
         categoryDTO.setEntryDate(categoryDomain.getEntryDate());
         categoryDTO.setStatus(categoryDomain.getStatus());
         return categoryDTO;
@@ -30,6 +31,7 @@ public class CategoryMapper {
         categoryDomain.setType(dto.getType());
         categoryDomain.setSubtype(dto.getSubtype());
         categoryDomain.setName(dto.getName());
+        categoryDomain.setLocationId(parseUuid(dto.getLocationId()));
         categoryDomain.setEntryDate(dto.getEntryDate());
         categoryDomain.setStatus(dto.getStatus());
         categoryDomain.setCns(dto.getCns());
@@ -45,6 +47,11 @@ public class CategoryMapper {
         entity.setType(dto.getType());
         entity.setSubtype(dto.getSubtype());
         entity.setName(dto.getName());
+        entity.setLocationId(parseUuid(dto.getLocationId()));
         return entity;
+    }
+
+    private UUID parseUuid(String value) {
+        return value == null || value.isBlank() ? null : UUID.fromString(value);
     }
 }
