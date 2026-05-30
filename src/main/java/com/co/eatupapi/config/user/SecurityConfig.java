@@ -92,6 +92,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/userapi/v1/document-types").permitAll()
                         .requestMatchers(HttpMethod.GET, "/userapi/v1/departments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/userapi/v1/cities").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/inventory/api/v1/location").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/inventory/api/v1/location/active").permitAll()
 
                         // Todo lo demás queda protegido
                         .anyRequest().authenticated()

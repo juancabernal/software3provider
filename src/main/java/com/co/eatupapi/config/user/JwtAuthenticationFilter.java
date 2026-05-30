@@ -35,6 +35,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+        LOGGER.info(">>> REQUEST PATH: {}", path);
+        if (path.equals("/inventory/api/v1/location") ||
+                path.equals("/inventory/api/v1/location/active")) {
+            LOGGER.info(">>> BYPASSING JWT FOR PUBLIC LOCATION ENDPOINT");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
