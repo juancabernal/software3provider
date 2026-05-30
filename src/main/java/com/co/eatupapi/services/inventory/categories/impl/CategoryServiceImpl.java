@@ -169,6 +169,8 @@ public class CategoryServiceImpl implements CategoryService {
         validateRequiredText(request.getType(), "type");
         validateRequiredText(request.getSubtype(), "subtype");
         validateRequiredText(request.getName(), "name");
+        validateRequiredText(request.getLocationId(), "locationId");
+        parseUuid(request.getLocationId());
     }
 
     private void validateRequiredText(String value, String fieldName) {

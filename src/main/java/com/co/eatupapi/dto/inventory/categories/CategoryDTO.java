@@ -10,6 +10,7 @@ public class CategoryDTO {
     private String type;
     private String subtype;
     private String name;
+    private String locationId;
     private LocalDateTime entryDate;
     private CategoryStatus status;
 
@@ -54,6 +55,14 @@ public class CategoryDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
     }
 
     public LocalDateTime getEntryDate() {

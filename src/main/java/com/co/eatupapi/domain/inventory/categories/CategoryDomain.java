@@ -28,6 +28,9 @@ public class CategoryDomain {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(name = "location_id")
+    private UUID locationId;
+
     @Column(nullable = false)
     private LocalDateTime entryDate;
 
@@ -82,6 +85,14 @@ public class CategoryDomain {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public UUID getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(UUID locationId) {
+        this.locationId = locationId;
     }
 
     public LocalDateTime getEntryDate() {
