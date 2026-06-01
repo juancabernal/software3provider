@@ -95,6 +95,9 @@ public class TransferServiceImpl implements TransferService {
         if (statusUpdate.estado() == TransferStatus.COMPLETADO) {
             applyInventoryMovement(transfer);
         }
+        if (statusUpdate.estado() == TransferStatus.CANCELADO || statusUpdate.estado() == TransferStatus.EN_TRANSITO) {
+            transfer.setFechaEnvio(LocalDateTime.now());
+        }
         transfer.setEstado(statusUpdate.estado());
         return transferMapper.toResponse(transferRepository.save(transfer));
     }
@@ -188,6 +191,7 @@ public class TransferServiceImpl implements TransferService {
         }
 
         transfer.setObservaciones(observations.trim());
+        transfer.setFechaLlegada(LocalDateTime.now());
         transfer.setEstado(TransferStatus.RECLAMADO);
         return transferMapper.toResponse(transferRepository.save(transfer));
     }
@@ -195,10 +199,12 @@ public class TransferServiceImpl implements TransferService {
     @Scheduled(initialDelay = 60000, fixedDelay = 60000)
     @Transactional
     public void moveTransfersToTransitWhenDepartureTimeArrives() {
+        LocalDateTime now = LocalDateTime.now();
         int updatedTransfers = transferRepository.moveToTransitWhenDepartureTimeArrives(
                 TransferStatus.EN_PROCESO,
                 TransferStatus.EN_TRANSITO,
-                LocalDateTime.now()
+                now,
+                now
         );
 
         if (updatedTransfers > 0) {
@@ -428,6 +434,7 @@ public class TransferServiceImpl implements TransferService {
         if (transfer.getEstado() == TransferStatus.EN_PROCESO
                 && transfer.getFechaEnvio() != null
                 && !LocalDateTime.now().isBefore(transfer.getFechaEnvio())) {
+            transfer.setFechaEnvio(LocalDateTime.now());
             transfer.setEstado(TransferStatus.EN_TRANSITO);
             return transferRepository.save(transfer);
         }
