@@ -169,6 +169,7 @@ public class TransferServiceImpl implements TransferService {
                 "Solo la sede destino autenticada puede confirmar el traslado");
         validateReceivableStatus(transfer);
         applyInventoryMovement(transfer);
+        transfer.setFechaLlegada(LocalDateTime.now());
         transfer.setEstado(TransferStatus.COMPLETADO);
         return transferMapper.toResponse(transferRepository.save(transfer));
     }
