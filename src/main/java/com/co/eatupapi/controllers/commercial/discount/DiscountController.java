@@ -15,7 +15,7 @@ import java.util.UUID;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/comercial/api/v1/discounts")
+@RequestMapping("/commercial/api/v1/discounts")
 public class DiscountController {
 
     private final DiscountService discountService;

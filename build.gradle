@@ -43,6 +43,12 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 	//RabbitMQ
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	// PDF — iText Core
+	implementation 'com.itextpdf:itext-core:9.1.0'
+	// Excel — Apache POI
+	implementation 'org.apache.poi:poi-ooxml:5.3.0'
+	// Mail — envío de correos
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	// Orden crítico: Lombok → binding → MapStruct
 	annotationProcessor 'org.projectlombok:lombok'

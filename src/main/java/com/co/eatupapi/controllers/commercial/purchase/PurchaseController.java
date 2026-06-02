@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,7 @@ public class PurchaseController {
             @Parameter(description = "Estado de la compra") @RequestParam(required = false) PurchaseStatus status,
             @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Cantidad de resultados por página") @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
         return ResponseEntity.ok(purchaseService.getPurchases(locationId,status, pageable));
     }
 

@@ -100,6 +100,15 @@ public class TransferController {
         return ResponseEntity.ok(transferService.findAllCancelled());
     }
 
+    @Operation(summary = "Obtener traslados reclamados",
+               description = "Permite obtener una lista de los traslados que actualmente estan en estado RECLAMADO.")
+    @ApiResponse(responseCode = "200", description = "Lista de traslados reclamados devuelta exitosamente")
+    @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    @GetMapping("/claimed")
+    public ResponseEntity<List<TransferResponseDTO>> getClaimedTransfers() {
+        return ResponseEntity.ok(transferService.findAllClaimed());
+    }
+
     @Operation(summary = "Obtener traslados entrantes de la sede destino",
                description = "Permite consultar los traslados que llegan a una sede destino.")
     @ApiResponse(responseCode = "200", description = "Lista de traslados entrantes devuelta exitosamente")

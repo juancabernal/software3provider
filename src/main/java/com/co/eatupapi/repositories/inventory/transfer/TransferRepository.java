@@ -14,16 +14,18 @@ import org.springframework.stereotype.Repository;
 public interface TransferRepository extends JpaRepository<Transfer, Long> {
     List<Transfer> findByEstado(TransferStatus estado);
     List<Transfer> findBySedeDestino(String sedeDestino);
-    List<Transfer> findBySedeDestinoAndEstado(String sedeDestino, TransferStatus estado);
 
     @Modifying
     @Query("""
             update Transfer t
-               set t.estado = :nextStatus
+               set t.estado = :nextStatus,
+                   t.fechaEnvio = :actualDepartureTime,
+                   t.updatedAt = :actualDepartureTime
              where t.estado = :currentStatus
                and t.fechaEnvio <= :departureTime
             """)
     int moveToTransitWhenDepartureTimeArrives(@Param("currentStatus") TransferStatus currentStatus,
                                               @Param("nextStatus") TransferStatus nextStatus,
-                                              @Param("departureTime") LocalDateTime departureTime);
+                                              @Param("departureTime") LocalDateTime departureTime,
+                                              @Param("actualDepartureTime") LocalDateTime actualDepartureTime);
 }

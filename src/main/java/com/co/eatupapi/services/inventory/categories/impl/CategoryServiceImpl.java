@@ -12,6 +12,10 @@ import com.co.eatupapi.utils.inventory.categories.exceptions.BusinessException;
 import com.co.eatupapi.utils.inventory.categories.exceptions.ResourceNotFoundException;
 import com.co.eatupapi.utils.inventory.categories.exceptions.ValidationException;
 import com.co.eatupapi.utils.inventory.categories.mapper.CategoryMapper;
+import com.co.eatupapi.domain.commercial.discount.DiscountDomain;
+import com.co.eatupapi.dto.commercial.discount.DiscountDTO;
+import com.co.eatupapi.messaging.commercial.discount.DiscountEventPublisher;
+import com.co.eatupapi.repositories.commercial.discount.DiscountRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -27,13 +31,19 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final CategoryEventPublisher categoryEventPublisher;
+    private final DiscountRepository discountRepository;
+    private final DiscountEventPublisher discountEventPublisher;
 
     public CategoryServiceImpl(CategoryRepository categoryRepository,
                                CategoryMapper categoryMapper,
-                               CategoryEventPublisher categoryEventPublisher) {
-        this.categoryRepository = categoryRepository;
-        this.categoryMapper = categoryMapper;
+                               CategoryEventPublisher categoryEventPublisher,
+                               DiscountRepository discountRepository,
+                               DiscountEventPublisher discountEventPublisher) {
+        this.categoryRepository     = categoryRepository;
+        this.categoryMapper         = categoryMapper;
         this.categoryEventPublisher = categoryEventPublisher;
+        this.discountRepository     = discountRepository;
+        this.discountEventPublisher = discountEventPublisher;
     }
 
     @Override
@@ -96,7 +106,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryEventPublisher.publishUpdateStatusRequested(
                 new CategoryUpdateStatusRequestedMessage(updatedCategory.getId(), statusUpdate)
         );
-
+        cascadeStatusToDiscounts(updatedCategory.getId(), newStatus == CategoryStatus.ACTIVE);
         return updatedCategoryDto;
     }
 
@@ -169,6 +179,8 @@ public class CategoryServiceImpl implements CategoryService {
         validateRequiredText(request.getType(), "type");
         validateRequiredText(request.getSubtype(), "subtype");
         validateRequiredText(request.getName(), "name");
+        validateRequiredText(request.getLocationId(), "locationId");
+        parseUuid(request.getLocationId());
     }
 
     private void validateRequiredText(String value, String fieldName) {
@@ -230,5 +242,15 @@ public class CategoryServiceImpl implements CategoryService {
         Throwable rootCause = NestedExceptionUtils.getMostSpecificCause(ex);
         String message = rootCause != null ? rootCause.getMessage() : ex.getMessage();
         return message != null && message.toLowerCase().contains(hint.toLowerCase());
+    }
+
+    private void cascadeStatusToDiscounts(UUID categoryId, boolean active) {
+        List<DiscountDomain> affected = discountRepository.findByCategoryId(categoryId);
+        for (DiscountDomain discount : affected) {
+            DiscountDTO dto = new DiscountDTO();
+            dto.setId(discount.getId());
+            dto.setStatus(active);
+            discountEventPublisher.publishDiscountStatusUpdated(dto);
+        }
     }
 }

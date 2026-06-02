@@ -13,4 +13,6 @@ public interface DiscountRepository extends JpaRepository<DiscountDomain, UUID> 
     boolean existsByCategoryIdAndDescription(UUID categoryId, String description);
 
     boolean existsByCategoryIdAndDescriptionAndIdNot(UUID categoryId, String description, UUID id);
+
+    List<DiscountDomain> findByCategoryId(UUID categoryId);
 }

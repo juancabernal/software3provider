@@ -841,8 +841,7 @@ public class TableServiceImpl implements TableService {
         return "La mesa " + table.getTableNumber() +
                 " tiene una reserva pendiente para " + formatReservationDateTime(reservation) +
                 " y no puede abrirse para terceros desde " + formatDateTime(lockStart(reservation)) +
-                " hasta " + formatDateTime(graceEnd(reservation)) +
-                ". Si llegó el cliente reservado, abra la mesa enviando el reservationId correspondiente";
+                " hasta " + formatDateTime(graceEnd(reservation));
     }
 
     private String formatReservationDateTime(TableReservationDomain reservation) {
