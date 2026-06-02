@@ -34,7 +34,7 @@ public class ClientSecurityConfig {
     @SuppressWarnings({"java:S112", "java:S1130"})
     public SecurityFilterChain clientSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/commercial/api/v1/clients/**")
+                .securityMatcher("/commercial/api/v1/clients", "/commercial/api/v1/clients/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)

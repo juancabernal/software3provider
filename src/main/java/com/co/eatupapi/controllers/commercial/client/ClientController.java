@@ -1,6 +1,5 @@
 package com.co.eatupapi.controllers.commercial.client;
 
-import com.co.eatupapi.dto.commercial.client.ClientAsyncResponseDTO;
 import com.co.eatupapi.dto.commercial.client.ClientDTO;
 import com.co.eatupapi.dto.commercial.client.ClientStatusUpdateDTO;
 import com.co.eatupapi.services.commercial.client.ClientService;
@@ -23,8 +22,9 @@ public class ClientController {
 
 
     @PostMapping
-    public ResponseEntity<ClientAsyncResponseDTO> createClient(@RequestBody ClientDTO request) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(clientService.createClient(request));
+    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO request) {
+        ClientDTO saved = clientService.createClient(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
 
@@ -49,20 +49,21 @@ public class ClientController {
 
 
     @PutMapping("/{clientId}")
-    public ResponseEntity<ClientAsyncResponseDTO> updateClient(
+    public ResponseEntity<ClientDTO> updateClient(
             @PathVariable String clientId,
             @RequestBody ClientDTO request) {
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(clientService.updateClient(clientId, request));
+        ClientDTO updated = clientService.updateClient(clientId, request);
+        return ResponseEntity.ok(updated);
     }
 
 
     @PatchMapping("/{clientId}/status")
-    public ResponseEntity<ClientAsyncResponseDTO> updateStatus(
+    public ResponseEntity<ClientDTO> updateStatus(
             @PathVariable String clientId,
             @RequestBody ClientStatusUpdateDTO request) {
 
-        Boolean active = request == null ? null : request.getActive();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(clientService.updateStatus(clientId, active));
+        ClientDTO updated = clientService.updateStatus(clientId, request.getActive());
+        return ResponseEntity.ok(updated);
     }
 }

@@ -2,20 +2,16 @@ package com.co.eatupapi.services.commercial.client.impl;
 
 import com.co.eatupapi.domain.commercial.client.ClientDomain;
 import com.co.eatupapi.domain.commercial.client.ClientStatus;
-import com.co.eatupapi.dto.commercial.client.ClientAsyncResponseDTO;
 import com.co.eatupapi.dto.commercial.client.ClientDTO;
-import com.co.eatupapi.messaging.commercial.client.ClientEventPublisher;
 import com.co.eatupapi.repositories.commercial.client.ClientRepository;
 import com.co.eatupapi.services.commercial.client.ClientService;
 import com.co.eatupapi.utils.commercial.client.exceptions.ClientBusinessException;
 import com.co.eatupapi.utils.commercial.client.exceptions.ClientNotFoundException;
-import com.co.eatupapi.utils.commercial.client.exceptions.ClientValidationException;
 import com.co.eatupapi.utils.commercial.client.mapper.ClientMapper;
 import com.co.eatupapi.utils.commercial.client.validation.ClientValidationUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,28 +20,25 @@ public class ClientServiceImpl implements ClientService {
 
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
-    private final ClientEventPublisher clientEventPublisher;
 
     public ClientServiceImpl(
             ClientRepository clientRepository,
-            ClientMapper clientMapper,
-            ClientEventPublisher clientEventPublisher) {
+            ClientMapper clientMapper) {
         this.clientRepository = clientRepository;
         this.clientMapper = clientMapper;
-        this.clientEventPublisher = clientEventPublisher;
     }
 
     @Override
-    public ClientAsyncResponseDTO createClient(ClientDTO request) {
+    @Transactional
+    public ClientDTO createClient(ClientDTO request) {
         validateCreateRequest(request);
         validateUniqueFields(request);
         validateForeignKeys();
 
         ClientDomain client = clientMapper.toDomain(request);
-        client.setId(UUID.randomUUID());
         client.setStatus(ClientStatus.ACTIVE);
-        clientEventPublisher.publishClientCreated(clientMapper.toDto(client));
-        return accepted("La creacion del cliente fue recibida y sera procesada.");
+        clientRepository.save(client);
+        return clientMapper.toDto(client);
     }
 
     @Override
@@ -75,27 +68,28 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public ClientAsyncResponseDTO updateClient(String clientId, ClientDTO request) {
+    @Transactional
+    public ClientDTO updateClient(String clientId, ClientDTO request) {
         validateUpdateRequest(request);
         validateForeignKeys();
 
         ClientDomain client = findById(clientId);
-        ClientDTO payload = buildUpdatedPayload(client, request);
-        clientEventPublisher.publishClientUpdated(clientId, payload);
-        return accepted("La actualizacion del cliente fue recibida y sera procesada.");
+        clientMapper.updateDomain(client, request);
+        clientRepository.save(client);
+        return clientMapper.toDto(client);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public ClientAsyncResponseDTO updateStatus(String clientId, Boolean active) {
+    @Transactional
+    public ClientDTO updateStatus(String clientId, Boolean active) {
         ClientValidationUtils.requireObject(active, "active");
 
         boolean isActive = active;
 
-        findById(clientId);
-        clientEventPublisher.publishClientStatusUpdated(clientId, isActive);
-        return accepted("El cambio de estado del cliente fue recibido y sera procesado.");
+        ClientDomain client = findById(clientId);
+        client.setStatus(isActive ? ClientStatus.ACTIVE : ClientStatus.INACTIVE);
+        clientRepository.save(client);
+        return clientMapper.toDto(client);
     }
 
     private void validateCreateRequest(ClientDTO request) {
@@ -152,36 +146,8 @@ public class ClientServiceImpl implements ClientService {
     }
 
     private ClientDomain findById(String clientId) {
-        UUID uuid = parseClientId(clientId);
+        UUID uuid = UUID.fromString(clientId);
         return clientRepository.findById(uuid)
                 .orElseThrow(() -> new ClientNotFoundException("Client not found"));
-    }
-
-    private UUID parseClientId(String clientId) {
-        try {
-            return UUID.fromString(clientId);
-        } catch (IllegalArgumentException ex) {
-            throw new ClientValidationException("Invalid clientId format. Expected UUID value");
-        }
-    }
-
-    private ClientAsyncResponseDTO accepted(String message) {
-        return new ClientAsyncResponseDTO(message, LocalDateTime.now());
-    }
-
-    private ClientDTO buildUpdatedPayload(ClientDomain client, ClientDTO request) {
-        ClientDTO payload = clientMapper.toDto(client);
-        payload.setFirstName(request.getFirstName());
-        payload.setSecondName(request.getSecondName());
-        payload.setFirstLastName(request.getFirstLastName());
-        payload.setSecondLastName(request.getSecondLastName());
-        payload.setDocumentTypeId(request.getDocumentTypeId());
-        payload.setPhone(request.getPhone());
-        payload.setAddress(request.getAddress());
-        payload.setCityId(request.getCityId());
-        payload.setTaxRegimeId(request.getTaxRegimeId());
-        payload.setAssignedSellerId(request.getAssignedSellerId());
-        payload.setApplyDiscounts(request.getApplyDiscounts());
-        return payload;
     }
 }
