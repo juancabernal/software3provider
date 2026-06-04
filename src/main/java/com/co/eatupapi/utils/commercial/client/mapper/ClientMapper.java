@@ -11,7 +11,7 @@ public class ClientMapper {
         ClientDTO dto = new ClientDTO();
         dto.setId(client.getId() == null ? null : client.getId().toString());
         dto.setFirstName(client.getFirstName());
-        dto.setSecondName(client.getSecondName());
+        dto.setSecondName(normalizeSecondName(client.getFirstName(), client.getSecondName()));
         dto.setFirstLastName(client.getFirstLastName());
         dto.setSecondLastName(client.getSecondLastName());
         dto.setDocumentTypeId(client.getDocumentTypeId());
@@ -30,7 +30,7 @@ public class ClientMapper {
     public ClientDomain toDomain(ClientDTO dto) {
         ClientDomain client = new ClientDomain();
         client.setFirstName(dto.getFirstName());
-        client.setSecondName(dto.getSecondName());
+        client.setSecondName(normalizeSecondName(dto.getFirstName(), dto.getSecondName()));
         client.setFirstLastName(dto.getFirstLastName());
         client.setSecondLastName(dto.getSecondLastName());
         client.setDocumentTypeId(dto.getDocumentTypeId());
@@ -48,7 +48,11 @@ public class ClientMapper {
 
     public void updateDomain(ClientDomain client, ClientDTO dto) {
         if (dto.getFirstName() != null) client.setFirstName(dto.getFirstName());
-        if (dto.getSecondName() != null) client.setSecondName(dto.getSecondName());
+        if (dto.getSecondName() != null) {
+            client.setSecondName(normalizeSecondName(
+                    dto.getFirstName() != null ? dto.getFirstName() : client.getFirstName(),
+                    dto.getSecondName()));
+        }
         if (dto.getFirstLastName() != null) client.setFirstLastName(dto.getFirstLastName());
         if (dto.getSecondLastName() != null) client.setSecondLastName(dto.getSecondLastName());
         if (dto.getDocumentTypeId() != null) client.setDocumentTypeId(dto.getDocumentTypeId());
@@ -58,5 +62,18 @@ public class ClientMapper {
         if (dto.getTaxRegimeId() != null) client.setTaxRegimeId(dto.getTaxRegimeId());
         if (dto.getAssignedSellerId() != null) client.setAssignedSellerId(dto.getAssignedSellerId());
         if (dto.getApplyDiscounts() != null) client.setApplyDiscounts(dto.getApplyDiscounts());
+    }
+
+    private String normalizeSecondName(String firstName, String secondName) {
+        if (secondName == null || secondName.isBlank()) {
+            return "";
+        }
+
+        String trimmedSecondName = secondName.trim();
+        if (firstName != null && trimmedSecondName.equalsIgnoreCase(firstName.trim())) {
+            return "";
+        }
+
+        return trimmedSecondName;
     }
 }
