@@ -36,15 +36,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        LOGGER.info(">>> REQUEST PATH: {}", path);
-        if (path.equals("/inventory/api/v1/location") ||
-                path.equals("/inventory/api/v1/location/active")) {
-            LOGGER.info(">>> BYPASSING JWT FOR PUBLIC LOCATION ENDPOINT");
+        String method = request.getMethod();
+
+        LOGGER.info(">>> REQUEST PATH: {} | METHOD: {}", path, method);
+
+        if ("GET".equalsIgnoreCase(method) &&
+                (path.equals("/inventory/api/v1/location") ||
+                        path.equals("/inventory/api/v1/location/active"))) {
+            LOGGER.info(">>> BYPASSING JWT FOR PUBLIC LOCATION GET ENDPOINT");
             filterChain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -56,6 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7).trim();
+
         try {
             if (!jwtService.isTokenValid(token)) {
                 SecurityContextHolder.clearContext();
@@ -64,6 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String email = jwtService.extractEmail(token);
+
             if (email == null || email.isBlank()) {
                 SecurityContextHolder.clearContext();
                 filterChain.doFilter(request, response);
@@ -75,8 +82,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .ifPresentOrElse(user -> {
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(email, null, List.of());
+
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }, SecurityContextHolder::clearContext);
+
         } catch (Exception ex) {
             LOGGER.warn("JWT authentication failed due to a technical error", ex);
             SecurityContextHolder.clearContext();
